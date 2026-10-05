@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   server: {
     allowedHosts: true,
     // Same-origin /miniapp calls reach the ASP.NET backend during development.
-    proxy: { '/miniapp': env.VITE_PROXY_TARGET || 'http://localhost:5135' },
+    proxy: { '/miniapp': { target: env.VITE_PROXY_TARGET || 'http://localhost:5135', changeOrigin: true } },
   },
   }
 })
