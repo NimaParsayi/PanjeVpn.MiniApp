@@ -1,0 +1,70 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Type-check & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # `npm run build` = vue-tsc (type-check) + vite build.
+      # No VITE_* variables: the app calls the API on its own origin (/miniapp).
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy to server
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      # Secrets can't be used in `if:` directly, so expose "is it configured?" as a plain value.
+      HAS_SSH: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_KEY != '' }}
+      # Folder the bot container serves as its web root (see compose.yaml in the bot repo).
+      REMOTE_DIR: /home/nima/Desktop/Project/PanjeVPNMiniApp-dist/
+    steps:
+      - name: Check deploy secrets
+        if: env.HAS_SSH != 'true'
+        run: echo "::warning::SSH_HOST / SSH_USER / SSH_KEY are not set in this repo's secrets; skipping deploy."
+
+      - uses: actions/download-artifact@v4
+        if: env.HAS_SSH == 'true'
+        with:
+          name: dist
+          path: dist
+
+      # --delete removes files from old builds. Updating in place (instead of replacing the folder)
+      # keeps the container's bind mount valid.
+      - uses: burnett01/rsync-deployments@9.0.1
+        if: env.HAS_SSH == 'true'
+        with:
+          switches: -rlvz --delete --chmod=D755,F644
+          path: dist/
+          remote_path: ${{ env.REMOTE_DIR }}
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
