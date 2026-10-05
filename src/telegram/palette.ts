@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+
 /**
  * Maps Telegram's `themeParams` onto our CSS custom properties (--p-*).
  * Everything else in tokens.css is derived from these with color-mix(), so any
@@ -38,6 +40,9 @@ const lum = (hex: string) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
+/** Reactive so telegram-ui-vue's <AppRoot> can follow the user's light/dark scheme. */
+export const isDark = ref(false)
+
 export function applyPalette(params: ThemeParams, scheme?: 'light' | 'dark') {
   const dark = scheme ? scheme === 'dark' : lum(params.bg_color ?? LIGHT.bg_color) < 0.45
   const p = { ...(dark ? DARK : LIGHT), ...Object.fromEntries(Object.entries(params).filter(([, v]) => !!v)) } as Required<ThemeParams>
@@ -53,5 +58,49 @@ export function applyPalette(params: ThemeParams, scheme?: 'light' | 'dark') {
   set('on-button', p.button_text_color)
   set('destructive', p.destructive_text_color)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+  isDark.value = dark
+  applyTguiTheme(p)
   return { dark, canvas: p.secondary_bg_color, header: p.bg_color }
+}
+
+/**
+ * telegram-ui-vue hard-codes its --tgui-* colours per appearance instead of reading Telegram's theme,
+ * so write the user's palette over them. `:root .app-root` outranks the library's `.app-root(--dark)` rules.
+ */
+function applyTguiTheme(p: Required<ThemeParams>) {
+  const css = `:root .app-root, :root .app-root--dark {
+    --tgui-bg-color: ${p.bg_color};
+    --tgui-text-color: ${p.text_color};
+    --tgui-hint-color: ${p.hint_color};
+    --tgui-link-color: ${p.link_color};
+    --tgui-button-color: ${p.button_color};
+    --tgui-button-text-color: ${p.button_text_color};
+    --tgui-secondary-bg-color: ${p.secondary_bg_color};
+    --tgui-header-bg-color: ${p.header_bg_color};
+    --tgui-accent-text-color: ${p.accent_text_color};
+    --tgui-section-bg-color: ${p.section_bg_color};
+    --tgui-section-header-text-color: ${p.hint_color};
+    --tgui-subtitle-text-color: ${p.hint_color};
+    --tgui-destructive-text-color: ${p.destructive_text_color};
+    --tgui-card-bg-color: ${p.section_bg_color};
+    --tgui-segmented-control-active-bg: ${p.section_bg_color};
+    --tgui-divider: color-mix(in srgb, ${p.text_color} 10%, transparent);
+    --tgui-outline: color-mix(in srgb, ${p.text_color} 12%, transparent);
+    --tgui-secondary-fill: color-mix(in srgb, ${p.button_color} 10%, transparent);
+    --tgui-destructive-background: color-mix(in srgb, ${p.destructive_text_color} 10%, transparent);
+    --tgui-plain-background: color-mix(in srgb, ${p.text_color} 5%, transparent);
+    --tgui-plain-foreground: color-mix(in srgb, ${p.text_color} 70%, transparent);
+    --tgui-secondary-hint-color: color-mix(in srgb, ${p.hint_color} 75%, ${p.bg_color});
+    --tgui-tertiary-bg-color: color-mix(in srgb, ${p.text_color} 4%, ${p.secondary_bg_color});
+    --tgui-quaternary-bg-color: color-mix(in srgb, ${p.text_color} 6%, ${p.secondary_bg_color});
+    --tgui-quartenary-bg-color: color-mix(in srgb, ${p.text_color} 6%, ${p.secondary_bg_color});
+    --tgui-font-family: var(--font);
+  }`
+  let el = document.getElementById('tgui-theme') as HTMLStyleElement | null
+  if (!el) {
+    el = document.createElement('style')
+    el.id = 'tgui-theme'
+    document.head.appendChild(el)
+  }
+  el.textContent = css
 }

@@ -1,0 +1,30 @@
+/**
+ * The custom-emoji ids the bot already uses in its messages and buttons (see Tuples/UserTuples.cs),
+ * named by the job they do in the Mini App. Plan icons come from the plan itself (plan.emojiId).
+ */
+export const E = {
+  panda: '5280639613004685879',
+  buy: '5312361253610475399',
+  wallet: '5287231198098117669',
+  walletTopUp: '5445221832074483553',
+  services: '5190806721286657692',
+  support: '5303138782004924588',
+  earn: '5332724926216428039',
+  gift: '5278467510604160626',
+  ton: '5377620962390857342',
+  stars: '5267500801240092311',
+  coin: '5199552030615558774',
+  calendar: '5274055917766202507',
+  warning: '5420323339723881652',
+  rocket: '5195033767969839232',
+  receipt: '5444856076954520455',
+  online: '5429651785352501917',
+  name: '5271604874419647061',
+  memo: '5197269100878907942',
+  paid: '5201691993775818138',
+  accept: '5445353829304387411',
+  heart: '5267102644886853973',
+  broadcast: '5224450179368767019',
+  extend: '5197371802136892976',
+  scope: '5379999674193172777',
+} as const

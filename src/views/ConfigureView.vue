@@ -1,14 +1,13 @@
 <script setup lang="ts">
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PageHeader from '@/components/PageHeader.vue'
-import FCard from '@/components/FCard.vue'
-import FField from '@/components/FField.vue'
-import FButton from '@/components/FButton.vue'
-import FSheet from '@/components/FSheet.vue'
-import FMessageBar from '@/components/FMessageBar.vue'
+import { Banner, Button, Cell, Input, List, Modal, ModalHeader, Section } from 'telegram-ui-vue'
+import PageTitle from '@/components/PageTitle.vue'
 import OrderPicker from '@/components/OrderPicker.vue'
 import ToneIcon from '@/components/ToneIcon.vue'
+import FIcon from '@/components/FIcon.vue'
 import { api, ApiError } from '@/api'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
@@ -37,11 +36,6 @@ const balance = computed(() => app.me?.wallet ?? 0)
 const enough = computed(() => balance.value >= price.value)
 const prefix = computed(() => (app.me?.isReseller ? app.me.resellerTitle : app.me?.telegramId))
 
-function review() {
-  if (nameError.value) return ui.toast(nameError.value, 'error')
-  confirming.value = true
-}
-
 async function buy() {
   if (!plan.value) return
   busy.value = true
@@ -60,56 +54,58 @@ async function buy() {
 </script>
 
 <template>
-  <div v-if="plan" class="view">
-    <PageHeader :title="plan.name" subtitle="سفارش سرویس جدید" back="/buy" />
-    <main class="page">
-      <FCard padding="lg">
-        <FField v-model="name" label="نام کانفیگ" ltr :error="nameError && name ? nameError : ''" hint="برای تشخیص راحت‌تر بین سرویس‌هات؛ فقط حروف انگلیسی و عدد" :maxlength="24" />
-        <p class="muted pre num">شناسه نهایی: <span class="ltr mono">{{ prefix }}-{{ name || '…' }}</span></p>
-      </FCard>
+  <div v-if="plan" class="screen">
+    <PageTitle :title="plan.name" subtitle="سفارش سرویس جدید" back />
+    <List>
+      <Section>
+        <template #header>نام کانفیگ</template>
+        <Input :value="name" class="ltr" placeholder="مثلاً phone" :maxlength="24" :status="nameError ? 'error' : 'default'" @input="name = ($event.target as HTMLInputElement).value" />
+        <template #footer>
+          <span v-if="nameError" class="err">{{ nameError }}</span>
+          <span v-else>شناسه نهایی: <span class="ltr">{{ prefix }}-{{ name }}</span></span>
+        </template>
+      </Section>
 
       <OrderPicker v-model:size="size" v-model:days-index="daysIndex" :plan="plan" />
 
-      <FCard padding="lg">
-        <div class="kv"><span>سرویس</span><b>{{ plan.name }}</b></div>
-        <div class="kv"><span>حجم</span><b class="num">{{ isUnlimited(plan) ? 'نامحدود' : gb(size) }}</b></div>
-        <div class="kv"><span>زمان</span><b class="num">{{ fa(plan.days[daysIndex]) }} روز</b></div>
-        <div v-if="!isUnlimited(plan)" class="kv"><span>قیمت هر گیگابایت</span><b class="num">{{ toman(pricePerGb(plan, daysIndex)) }}</b></div>
-        <div class="divider" />
-        <div class="kv total"><span>مجموع مبلغ</span><b class="num">{{ toman(price) }}</b></div>
-        <div class="kv"><span>موجودی کیف پول</span><b class="num" :class="{ bad: !enough }">{{ toman(balance) }}</b></div>
-      </FCard>
+      <Section>
+        <template #header>خلاصه سفارش</template>
+        <Cell><template #after>{{ plan.name }}</template>سرویس</Cell>
+        <Cell><template #after><span class="num">{{ isUnlimited(plan) ? 'نامحدود' : gb(size) }}</span></template>حجم</Cell>
+        <Cell><template #after><span class="num">{{ fa(plan.days[daysIndex]) }} روز</span></template>زمان</Cell>
+        <Cell v-if="!isUnlimited(plan)"><template #after><span class="num">{{ toman(pricePerGb(plan, daysIndex)) }}</span></template>قیمت هر گیگابایت</Cell>
+        <Cell><template #after><b class="num total">{{ toman(price) }}</b></template><b>مجموع مبلغ</b></Cell>
+        <Cell><template #after><span class="num" :class="{ err: !enough }">{{ toman(balance) }}</span></template>موجودی کیف پول</Cell>
+      </Section>
 
-      <FMessageBar v-if="!enough" intent="warning" title="موجودی کافی نیست">
-        برای این سفارش {{ toman(price - balance) }} دیگه لازم داری.
-        <template #action><FButton size="sm" appearance="primary" @click="$router.push('/wallet/deposit/ton')">شارژ</FButton></template>
-      </FMessageBar>
+      <Banner v-if="!enough" type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+        <template #header>موجودی کافی نیست</template>
+        <template #subheader>برای این سفارش {{ toman(price - balance) }} دیگه لازم داری.</template>
+        <Button size="s" @click="router.push('/wallet/deposit/ton')">شارژ کیف پول</Button>
+      </Banner>
+    </List>
 
-      <div class="sticky-cta">
-        <FButton appearance="primary" size="lg" block icon="check" :disabled="!enough || !!nameError" @click="review">تایید و خرید</FButton>
+    <div class="action-bar">
+      <Button stretched size="l" :disabled="!enough || !!nameError" @click="confirming = true">تایید و خرید · {{ toman(price) }}</Button>
+    </div>
+
+    <Modal v-model:open="confirming">
+      <template #header><ModalHeader>تایید خرید</ModalHeader></template>
+      <div class="sheet">
+        <Cell><template #before><ToneIcon :icon="plan.icon" :tone="plan.tone" :size="44" :emoji="plan.emojiId" /></template>{{ plan.name }}<template #subtitle><span class="ltr">{{ prefix }}-{{ name }}</span></template></Cell>
+        <Cell><template #after><span class="num">{{ isUnlimited(plan) ? 'نامحدود' : gb(size) }}</span></template>حجم</Cell>
+        <Cell><template #after><span class="num">{{ fa(plan.days[daysIndex]) }} روز</span></template>زمان</Cell>
+        <Cell><template #after><b class="num total">{{ toman(price) }}</b></template>از کیف پول کسر می‌شه</Cell>
+        <div class="pad cta"><Button stretched size="l" :loading="busy" @click="buy">پرداخت و ساخت سرویس</Button></div>
       </div>
-    </main>
-
-    <FSheet :open="confirming" title="تایید خرید" @close="!busy && (confirming = false)">
-      <div class="row sum">
-        <ToneIcon :icon="plan.icon" :tone="plan.tone" />
-        <div class="grow"><b>{{ plan.name }}</b><div class="muted ltr mono nm">{{ prefix }}-{{ name }}</div></div>
-      </div>
-      <div class="kv"><span>حجم</span><b class="num">{{ isUnlimited(plan) ? 'نامحدود' : gb(size) }}</b></div>
-      <div class="kv"><span>زمان</span><b class="num">{{ fa(plan.days[daysIndex]) }} روز</b></div>
-      <div class="kv total"><span>از کیف پول کسر می‌شه</span><b class="num">{{ toman(price) }}</b></div>
-      <template #footer>
-        <FButton appearance="primary" size="lg" block :loading="busy" @click="buy">پرداخت و ساخت سرویس</FButton>
-      </template>
-    </FSheet>
+    </Modal>
   </div>
 </template>
 
 <style scoped>
-.pre { font: var(--t-caption); margin-top: var(--s-s); display: flex; gap: var(--s-xs); flex-wrap: wrap; }
-.total span, .total b { font: var(--t-subtitle2); color: var(--fg-1); }
-.total b { color: var(--fg-brand); }
-.bad { color: var(--danger-fg); }
-.sum { padding-bottom: var(--s-s); }
-.nm { font-size: 12px; }
+.total { color: var(--tgui-link-color); }
+.err { color: var(--tgui-destructive-text-color); }
+.sheet { padding-bottom: calc(var(--safe-bottom) + 12px); }
+.cta { margin-top: 12px; }
 </style>

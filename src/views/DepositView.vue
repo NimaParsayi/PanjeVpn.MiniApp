@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { confetti } from '@/utils/confetti'
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PageHeader from '@/components/PageHeader.vue'
-import FCard from '@/components/FCard.vue'
-import FButton from '@/components/FButton.vue'
-import FField from '@/components/FField.vue'
+import { Banner, Button, Cell, Input, List, Placeholder, Section } from 'telegram-ui-vue'
+import Tag from '@/components/Tag.vue'
+import PageTitle from '@/components/PageTitle.vue'
 import FIcon from '@/components/FIcon.vue'
-import FMessageBar from '@/components/FMessageBar.vue'
-import CopyRow from '@/components/CopyRow.vue'
 import ToneIcon from '@/components/ToneIcon.vue'
+import CopyCell from '@/components/CopyCell.vue'
 import { api, ApiError, type StarsDeposit, type TonDeposit } from '@/api'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
+import { confetti } from '@/utils/confetti'
 import { haptic, openInvoice } from '@/telegram/webapp'
 import { countdown, fa, toman } from '@/utils/format'
 
@@ -106,86 +106,86 @@ async function payStars() {
 </script>
 
 <template>
-  <div class="view">
-    <PageHeader :title="method === 'ton' ? 'شارژ با TON' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back="/wallet" />
+  <div class="screen">
+    <PageTitle :title="method === 'ton' ? 'شارژ با TON' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back />
 
-    <main v-if="step === 'amount'" class="page no-nav">
-      <div class="section-title"><span>مقدار مورد نظر برای شارژ</span></div>
-      <div class="chips">
-        <button
-          v-for="p in presets" :key="p" type="button" class="chip num" :class="{ on: !custom && amount === p }" @click="pick(p)"
-        >{{ fa(p) }}<small>تومان</small></button>
+    <template v-if="step === 'amount'">
+      <List>
+        <Section>
+          <template #header>مقدار مورد نظر برای شارژ</template>
+          <div class="chips">
+            <Button v-for="p in presets" :key="p" :mode="!custom && amount === p ? 'filled' : 'gray'" size="m" @click="pick(p)">
+              <span class="num">{{ fa(p) }}</span>&nbsp;<small>تومان</small>
+            </Button>
+          </div>
+        </Section>
+        <Section>
+          <template #header>مبلغ دلخواه</template>
+          <Input :value="custom" inputmode="numeric" placeholder="مثلاً ۷۵۰۰۰۰" :status="customError ? 'error' : 'default'" @input="custom = ($event.target as HTMLInputElement).value">
+            <template #after><span class="hint">تومان</span></template>
+          </Input>
+          <template #footer><span :class="{ bad: !!customError }">{{ customError || `حداقل ${toman(MIN)}` }}</span></template>
+        </Section>
+      </List>
+      <div class="action-bar">
+        <Button stretched size="l" :disabled="!canContinue" :loading="busy" @click="start">ادامه · {{ toman(finalAmount) }}</Button>
       </div>
-      <FCard padding="md">
-        <FField v-model="custom" label="مبلغ دلخواه" inputmode="numeric" suffix="تومان" placeholder="مثلاً ۷۵۰۰۰۰" :error="customError" />
-      </FCard>
-      <div class="sticky-cta">
-        <FButton appearance="primary" size="lg" block :disabled="!canContinue" :loading="busy" iconEnd="chevronEnd" @click="start">
-          ادامه · {{ toman(finalAmount) }}
-        </FButton>
+    </template>
+
+    <List v-else-if="step === 'pay' && method === 'ton' && ton">
+      <Section>
+        <Cell>
+          <template #before><ToneIcon icon="ton" tone="primary" :emoji="E.ton" /></template>
+          شارژ کیف پول
+          <template #subtitle><span class="num">{{ toman(ton.priceToman) }}</span></template>
+          <template #after><Tag :tone="expired ? 'danger' : left < 300000 ? 'warning' : 'info'" dot><span class="num">{{ expired ? 'منقضی شد' : countdown(left) }}</span></Tag></template>
+        </Cell>
+      </Section>
+      <Banner type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+        <template #header>حتماً با ممو واریز کن</template>
+        <template #subheader>مقدار دقیق <b class="num ltr">{{ ton.priceTon }}</b> TON رو به آدرس زیر و با ممو/تگ خودت ارسال کن. این پرداخت فقط تا ۳۰ دقیقه معتبره.</template>
+      </Banner>
+      <Section>
+        <CopyCell label="مقدار (TON)" :value="String(ton.priceTon)" :display="`${ton.priceTon} TON`" ltr />
+        <CopyCell label="آدرس والت" :value="ton.walletAddress" ltr />
+        <CopyCell label="ممو / تگ (اجباری)" :value="ton.memo" ltr />
+      </Section>
+      <div class="pad">
+        <Button v-if="!expired" stretched size="l" :loading="checking" @click="checkTon"><template #before><FIcon name="checkCircle" :size="20" /></template>پرداخت کردم</Button>
+        <Button v-else stretched size="l" @click="step = 'amount'"><template #before><FIcon name="refresh" :size="20" /></template>شروع دوباره</Button>
       </div>
-    </main>
+    </List>
 
-    <main v-else-if="step === 'pay' && method === 'ton' && ton" class="page no-nav">
-      <FCard padding="lg" class="head">
-        <div class="row">
-          <ToneIcon icon="ton" tone="primary" />
-          <div class="grow"><b>شارژ کیف پول</b><div class="muted cap num">{{ toman(ton.priceToman) }}</div></div>
-          <div class="timer num" :class="{ end: expired }"><FIcon name="clock" :size="14" /> {{ expired ? 'منقضی شد' : countdown(left) }}</div>
-        </div>
-      </FCard>
+    <List v-else-if="step === 'pay' && stars">
+      <Placeholder>
+        <template #header><span class="num">{{ fa(stars.priceStars) }}</span> Stars</template>
+        <template #description>معادل {{ toman(stars.priceToman) }}. با زدن دکمه‌ی زیر فاکتور استارز تلگرام باز می‌شه و بعد از پرداخت، موجودی همون لحظه شارژ می‌شه.</template>
+        <TgEmoji :id="E.stars" fallback="star" :size="120" loop />
+        <template #action><Button size="l" :loading="checking" @click="payStars"><template #before><FIcon name="star" :size="20" /></template>پرداخت با Stars</Button></template>
+      </Placeholder>
+    </List>
 
-      <FMessageBar intent="warning" title="حتماً با ممو واریز کن">
-        مقدار دقیق <b class="num ltr">{{ ton.priceTon }}</b> TON رو به آدرس زیر و <b>با ممو/تگ خودت</b> ارسال کن. این پرداخت فقط تا ۳۰ دقیقه معتبره.
-      </FMessageBar>
-
-      <CopyRow label="مقدار (TON)" :value="String(ton.priceTon)" :display="`${ton.priceTon} TON`" ltr />
-      <CopyRow label="آدرس والت" :value="ton.walletAddress" ltr />
-      <CopyRow label="ممو / تگ (اجباری)" :value="ton.memo" ltr />
-
-      <div class="sticky-cta">
-        <FButton v-if="!expired" appearance="success" size="lg" block icon="checkCircle" :loading="checking" @click="checkTon">پرداخت کردم</FButton>
-        <FButton v-else appearance="primary" size="lg" block icon="refresh" @click="step = 'amount'">شروع دوباره</FButton>
-      </div>
-    </main>
-
-    <main v-else-if="step === 'pay' && stars" class="page no-nav">
-      <FCard padding="lg" class="stars">
-        <ToneIcon icon="star" tone="success" :size="56" />
-        <div class="num big">{{ fa(stars.priceStars) }} <small>Stars</small></div>
-        <div class="muted num">معادل {{ toman(stars.priceToman) }}</div>
-      </FCard>
-      <FMessageBar intent="info">با زدن دکمه‌ی زیر، فاکتور استارز تلگرام باز می‌شه. بعد از پرداخت، موجودی همون لحظه شارژ می‌شه.</FMessageBar>
-      <div class="sticky-cta"><FButton appearance="primary" size="lg" block icon="star" :loading="checking" @click="payStars">پرداخت با Stars</FButton></div>
-    </main>
-
-    <main v-else class="page no-nav">
-      <FCard padding="lg" class="done">
-        <span class="okc"><FIcon name="check" :size="34" :stroke="2.4" /></span>
-        <h2>کیف پولت شارژ شد!</h2>
-        <p class="muted">{{ toman(finalAmount) }} به موجودیت اضافه شد.</p>
-        <div class="bal num">موجودی جدید: <b>{{ toman(app.me!.wallet) }}</b></div>
-      </FCard>
-      <FButton appearance="primary" size="lg" block icon="cart" @click="router.replace('/buy')">خرید سرویس</FButton>
-      <FButton block @click="router.replace('/wallet')">برگشت به کیف پول</FButton>
-    </main>
+    <List v-else>
+      <Placeholder>
+        <template #header>کیف پولت شارژ شد!</template>
+        <template #description>{{ toman(finalAmount) }} به موجودیت اضافه شد. موجودی جدید: <b class="num">{{ toman(app.me!.wallet) }}</b></template>
+        <TgEmoji :id="E.paid" fallback="check" :size="120" />
+        <template #action>
+          <div class="done-btns">
+            <Button stretched size="l" @click="router.replace('/buy')"><template #before><FIcon name="cart" :size="18" /></template>خرید سرویس</Button>
+            <Button stretched size="l" mode="gray" @click="router.replace('/wallet')">برگشت به کیف پول</Button>
+          </div>
+        </template>
+      </Placeholder>
+    </List>
   </div>
 </template>
 
 <style scoped>
-.chips { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-s); }
-.chip { display: flex; flex-direction: column; align-items: center; padding: var(--s-m) 0; background: var(--card-bg); border: 1px solid var(--stroke-2); border-radius: var(--r-lg); font: var(--t-subtitle2); cursor: pointer; transition: all var(--dur-fast) var(--ease-point); }
-.chip small { font: var(--t-caption); color: var(--fg-3); }
-.chip:hover { background: var(--bg-subtle-hover); }
-.chip.on { background: var(--brand-bg-tint); border-color: var(--brand-stroke); box-shadow: inset 0 0 0 1px var(--brand-stroke); color: var(--fg-brand); }
-.cap { font: var(--t-caption); }
-.timer { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--r-full); background: var(--brand-bg-tint); color: var(--fg-brand); font: var(--t-caption); font-weight: 600; }
-.timer.end { background: var(--danger-bg); color: var(--danger-fg); }
-.stars { display: flex; flex-direction: column; align-items: center; gap: var(--s-s); text-align: center; }
-.big { font: var(--t-title2); } .big small { font: var(--t-body); color: var(--fg-3); }
-.done { display: flex; flex-direction: column; align-items: center; gap: var(--s-s); text-align: center; padding-block: var(--s-xxxl); }
-.okc { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--success-solid); color: #fff; animation: pop var(--dur-slow) var(--ease-decel); box-shadow: 0 0 0 8px var(--success-bg); }
-.done h2 { font: var(--t-title3); margin-top: var(--s-m); }
-.bal { margin-top: var(--s-m); padding: var(--s-s) var(--s-l); border-radius: var(--r-full); background: var(--bg-4); }
-@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 16px 12px; }
+.hint { color: var(--tgui-hint-color); padding-inline-end: 12px; font-size: 13px; }
+.bad { color: var(--tgui-destructive-text-color); }
+.done-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 240px; }
+small { opacity: .75; }
 </style>

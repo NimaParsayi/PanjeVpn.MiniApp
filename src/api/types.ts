@@ -23,6 +23,8 @@ export interface Plan {
   maxSize: number // -1 ⇒ no upper bound
   sizeMultiplication: number // -1 ⇒ step by 1, otherwise ×N
   resellersOnly: boolean
+  /** Telegram custom-emoji id stored on the plan (the same icon the bot shows). */
+  emojiId?: string | null
 }
 
 export interface UserService {
@@ -41,6 +43,7 @@ export interface UserService {
   createdAt: string
   /** The panel could not be reached, so usage/expiry are unknown. */
   unavailable?: boolean
+  emojiId?: string | null
 }
 
 export interface CreateServiceInput { planId: string; size: number; daysIndex: number; name: string }
@@ -71,6 +74,8 @@ export interface Api {
   startStarsDeposit(priceToman: number): Promise<StarsDeposit>
   createGift(amount: number): Promise<Gift>
   sendBulkMessage(text: string): Promise<BulkResult>
+  /** Raw .tgs bytes (gzipped Lottie) of a Telegram custom emoji, or null when unavailable. */
+  getEmoji(id: string): Promise<ArrayBuffer | null>
 }
 
 export class ApiError extends Error {}

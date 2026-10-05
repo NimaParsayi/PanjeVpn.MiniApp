@@ -1,12 +1,11 @@
 <script setup lang="ts">
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import PageHeader from '@/components/PageHeader.vue'
-import FCard from '@/components/FCard.vue'
-import FButton from '@/components/FButton.vue'
-import FField from '@/components/FField.vue'
-import FSheet from '@/components/FSheet.vue'
-import FMessageBar from '@/components/FMessageBar.vue'
+import { Banner, Button, Cell, List, Modal, ModalHeader, Section, Textarea } from 'telegram-ui-vue'
+import PageTitle from '@/components/PageTitle.vue'
+import FIcon from '@/components/FIcon.vue'
 import { api, ApiError, type BulkResult } from '@/api'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
@@ -35,35 +34,44 @@ async function send() {
 </script>
 
 <template>
-  <div class="view">
-    <PageHeader title="پیام همگانی" subtitle="پنل ادمین" back="/" />
-    <main class="page no-nav">
-      <FCard padding="lg">
-        <FField v-model="text" multiline :rows="7" label="متن پیام" placeholder="پیام مورد نظرت رو بنویس…" hint="برای همه‌ی کاربران ربات ارسال می‌شه." />
-      </FCard>
+  <div class="screen">
+    <PageTitle title="پیام همگانی" subtitle="پنل ادمین" back />
+    <List>
+      <Section>
+        <template #header>متن پیام</template>
+        <Textarea :value="text" placeholder="پیام مورد نظرت رو بنویس…" :rows="7" @input="text = ($event.target as HTMLTextAreaElement).value" />
+        <template #footer>برای همه‌ی کاربران ربات ارسال می‌شه.</template>
+      </Section>
 
-      <FCard v-if="result" padding="lg" class="res">
-        <div class="stat"><b class="num">{{ fa(result.total) }}</b><span>کل کاربران</span></div>
-        <div class="stat ok"><b class="num">{{ fa(result.success) }}</b><span>موفق</span></div>
-        <div class="stat bad"><b class="num">{{ fa(result.failed) }}</b><span>ناموفق</span></div>
-      </FCard>
+      <Section v-if="result">
+        <template #header>نتیجه‌ی ارسال</template>
+        <Cell><template #after><b class="num">{{ fa(result.total) }}</b></template>کل کاربران</Cell>
+        <Cell><template #after><b class="num ok">{{ fa(result.success) }}</b></template>موفق</Cell>
+        <Cell><template #after><b class="num bad">{{ fa(result.failed) }}</b></template>ناموفق</Cell>
+      </Section>
+    </List>
 
-      <div class="sticky-cta">
-        <FButton appearance="primary" size="lg" block icon="send" :disabled="!text.trim()" @click="confirming = true">ارسال به همه</FButton>
+    <div class="action-bar">
+      <Button stretched size="l" :disabled="!text.trim()" @click="confirming = true"><template #before><FIcon name="send" :size="20" /></template>ارسال به همه</Button>
+    </div>
+
+    <Modal v-model:open="confirming">
+      <template #header><ModalHeader>ارسال پیام همگانی؟</ModalHeader></template>
+      <div class="sheet">
+        <Banner type="section">
+          <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+          <template #header>قابل بازگشت نیست</template>
+          <template #subheader>این پیام برای همه‌ی کاربران ارسال می‌شه.</template>
+        </Banner>
+        <Cell multiline>{{ text }}</Cell>
+        <div class="pad cta"><Button stretched size="l" :loading="busy" @click="send">تایید و ارسال</Button></div>
       </div>
-    </main>
-
-    <FSheet :open="confirming" title="ارسال پیام همگانی؟" @close="!busy && (confirming = false)">
-      <FMessageBar intent="warning">این پیام برای همه‌ی کاربران ارسال می‌شه و قابل بازگشت نیست.</FMessageBar>
-      <FCard padding="md" style="margin-top: 12px"><p class="prev">{{ text }}</p></FCard>
-      <template #footer><FButton appearance="primary" size="lg" block :loading="busy" @click="send">تایید و ارسال</FButton></template>
-    </FSheet>
+    </Modal>
   </div>
 </template>
 
 <style scoped>
-.res { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
-.stat { display: flex; flex-direction: column; gap: 2px; } .stat b { font: var(--t-title3); } .stat span { font: var(--t-caption); color: var(--fg-3); }
-.ok b { color: var(--success-fg); } .bad b { color: var(--danger-fg); }
-.prev { white-space: pre-wrap; max-height: 160px; overflow: auto; font-size: 13px; }
+.ok { color: var(--success); } .bad { color: var(--tgui-destructive-text-color); }
+.sheet { padding-bottom: calc(var(--safe-bottom) + 12px); }
+.cta { margin-top: 12px; }
 </style>

@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PageHeader from '@/components/PageHeader.vue'
-import FCard from '@/components/FCard.vue'
-import FButton from '@/components/FButton.vue'
-import FSheet from '@/components/FSheet.vue'
-import FMessageBar from '@/components/FMessageBar.vue'
-import FSkeleton from '@/components/FSkeleton.vue'
+import { Banner, Button, Cell, List, Modal, ModalHeader, Section, Skeleton } from 'telegram-ui-vue'
+import PageTitle from '@/components/PageTitle.vue'
 import OrderPicker from '@/components/OrderPicker.vue'
+import FIcon from '@/components/FIcon.vue'
 import { api, ApiError, type UserService } from '@/api'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
+import { confetti } from '@/utils/confetti'
 import { fa, faDecimal, gb, toman } from '@/utils/format'
 import { pricePerGb, totalPrice } from '@/utils/pricing'
 
@@ -48,6 +48,7 @@ async function extend() {
     await api.extendService({ serviceId: service.value.id, size: size.value, daysIndex: daysIndex.value })
     await Promise.all([app.refreshMe(), app.refreshServices()])
     confirming.value = false
+    confetti()
     ui.toast('سرویس با موفقیت تمدید شد', 'success')
     router.replace(`/services/${service.value.id}`)
   } catch (e) {
@@ -59,53 +60,61 @@ async function extend() {
 </script>
 
 <template>
-  <div class="view">
-    <PageHeader title="تمدید سرویس" back />
-    <main v-if="service && plan" class="page no-nav">
-      <FCard padding="md">
-        <div class="kv"><span>شناسه کانفیگ</span><b class="ltr mono id">{{ service.name }}</b></div>
-        <div class="kv"><span>حجم فعلی</span><b class="num">{{ faDecimal(service.totalGb) }} گیگابایت</b></div>
-      </FCard>
+  <div class="screen">
+    <PageTitle title="تمدید سرویس" back />
+    <List v-if="service && plan">
+      <Section>
+        <Cell><template #after><span class="ltr id">{{ service.name }}</span></template>شناسه کانفیگ</Cell>
+        <Cell><template #after><span class="num">{{ faDecimal(service.totalGb) }} گیگابایت</span></template>حجم فعلی</Cell>
+      </Section>
 
       <OrderPicker v-model:size="size" v-model:days-index="daysIndex" :plan="plan" />
 
-      <FMessageBar intent="warning">
-        با تمدید، زمان سرویس از <b>همین الان</b> محاسبه می‌شه و به زمان قبلی اضافه نمی‌شه، ولی حجم تمدید به حجم قبلی <b>اضافه</b> می‌شه.
-      </FMessageBar>
+      <Banner type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+        <template #header>زمان از همین الان محاسبه می‌شه</template>
+        <template #subheader>با تمدید، زمان سرویس به زمان قبلی اضافه نمی‌شه، ولی حجم تمدید به حجم قبلی اضافه می‌شه.</template>
+      </Banner>
 
-      <FCard padding="lg">
-        <div class="kv"><span>حجم جدید</span><b class="num">{{ gb(service.totalGb + size) }}</b></div>
-        <div class="kv"><span>زمان</span><b class="num">{{ fa(plan.days[daysIndex]) }} روز از امروز</b></div>
-        <div class="kv"><span>قیمت هر گیگابایت</span><b class="num">{{ toman(pricePerGb(plan, daysIndex)) }}</b></div>
-        <div class="divider" />
-        <div class="kv total"><span>مجموع مبلغ</span><b class="num">{{ toman(price) }}</b></div>
-        <div class="kv"><span>موجودی کیف پول</span><b class="num" :class="{ bad: !enough }">{{ toman(balance) }}</b></div>
-      </FCard>
+      <Section>
+        <template #header>خلاصه تمدید</template>
+        <Cell><template #after><span class="num">{{ gb(service.totalGb + size) }}</span></template>حجم جدید</Cell>
+        <Cell><template #after><span class="num">{{ fa(plan.days[daysIndex]) }} روز از امروز</span></template>زمان</Cell>
+        <Cell><template #after><span class="num">{{ toman(pricePerGb(plan, daysIndex)) }}</span></template>قیمت هر گیگابایت</Cell>
+        <Cell><template #after><b class="num total">{{ toman(price) }}</b></template><b>مجموع مبلغ</b></Cell>
+        <Cell><template #after><span class="num" :class="{ bad: !enough }">{{ toman(balance) }}</span></template>موجودی کیف پول</Cell>
+      </Section>
 
-      <FMessageBar v-if="!enough" intent="error" title="موجودی کافی نیست">
-        <template #action><FButton size="sm" appearance="primary" @click="$router.push('/wallet/deposit/ton')">شارژ</FButton></template>
-        {{ toman(price - balance) }} دیگه لازم داری.
-      </FMessageBar>
+      <Banner v-if="!enough" type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="error" :size="32" /></template>
+        <template #header>موجودی کافی نیست</template>
+        <template #subheader>{{ toman(price - balance) }} دیگه لازم داری.</template>
+        <Button size="s" @click="router.push('/wallet/deposit/ton')">شارژ کیف پول</Button>
+      </Banner>
+    </List>
+    <List v-else><Section><Skeleton visible><div style="height: 200px" /></Skeleton></Section></List>
 
-      <div class="sticky-cta">
-        <FButton appearance="success" size="lg" block icon="check" :disabled="!enough" @click="confirming = true">تایید و تمدید</FButton>
+    <div v-if="service && plan" class="action-bar">
+      <Button stretched size="l" :disabled="!enough" @click="confirming = true">تایید و تمدید · {{ toman(price) }}</Button>
+    </div>
+
+    <Modal v-model:open="confirming">
+      <template #header><ModalHeader>تایید تمدید</ModalHeader></template>
+      <div class="sheet">
+        <Cell><template #after><span class="ltr id">{{ service?.name }}</span></template>سرویس</Cell>
+        <Cell><template #after><span class="num">{{ gb(size) }}</span></template>حجم افزوده</Cell>
+        <Cell><template #after><span class="num">{{ fa(plan?.days[daysIndex] ?? 0) }} روز</span></template>زمان</Cell>
+        <Cell><template #after><b class="num total">{{ toman(price) }}</b></template>از کیف پول کسر می‌شه</Cell>
+        <div class="pad cta"><Button stretched size="l" :loading="busy" @click="extend">پرداخت و تمدید</Button></div>
       </div>
-    </main>
-    <main v-else class="page no-nav"><FSkeleton :h="90" :r="8" /><FSkeleton :h="200" :r="8" /></main>
-
-    <FSheet :open="confirming" title="تایید تمدید" @close="!busy && (confirming = false)">
-      <div class="kv"><span>سرویس</span><b class="ltr mono id">{{ service?.name }}</b></div>
-      <div class="kv"><span>حجم افزوده</span><b class="num">{{ gb(size) }}</b></div>
-      <div class="kv"><span>زمان</span><b class="num">{{ fa(plan?.days[daysIndex] ?? 0) }} روز</b></div>
-      <div class="kv total"><span>از کیف پول کسر می‌شه</span><b class="num">{{ toman(price) }}</b></div>
-      <template #footer><FButton appearance="success" size="lg" block :loading="busy" @click="extend">پرداخت و تمدید</FButton></template>
-    </FSheet>
+    </Modal>
   </div>
 </template>
 
 <style scoped>
-.id { font-size: 12px; font-weight: 500; }
-.total span, .total b { font: var(--t-subtitle2); color: var(--fg-1); }
-.total b { color: var(--fg-brand); }
-.bad { color: var(--danger-fg); }
+.id { font-size: 12px; }
+.total { color: var(--tgui-link-color); }
+.bad { color: var(--tgui-destructive-text-color); }
+.sheet { padding-bottom: calc(var(--safe-bottom) + 12px); }
+.cta { margin-top: 12px; }
 </style>

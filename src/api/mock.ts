@@ -152,5 +152,7 @@ export const mockApi: Api = {
     return wait(gift, 700)
   },
 
+  getEmoji: async () => null, // no bot in demo mode → components fall back to vector icons
+
   sendBulkMessage: async () => wait({ total: 1280, success: 1243, failed: 37 }, 1800),
 }

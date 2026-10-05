@@ -1,23 +1,23 @@
 <script setup lang="ts">
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import PageHeader from '@/components/PageHeader.vue'
-import FCard from '@/components/FCard.vue'
-import FButton from '@/components/FButton.vue'
-import FBadge from '@/components/FBadge.vue'
-import FIcon from '@/components/FIcon.vue'
-import FProgress from '@/components/FProgress.vue'
-import FQr from '@/components/FQr.vue'
-import FSkeleton from '@/components/FSkeleton.vue'
-import FMessageBar from '@/components/FMessageBar.vue'
-import CopyRow from '@/components/CopyRow.vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Banner, Button, Cell, List, Section, Skeleton } from 'telegram-ui-vue'
+import UsageBar from '@/components/UsageBar.vue'
+import Tag from '@/components/Tag.vue'
+import PageTitle from '@/components/PageTitle.vue'
 import ToneIcon from '@/components/ToneIcon.vue'
+import FIcon from '@/components/FIcon.vue'
+import FQr from '@/components/FQr.vue'
+import CopyCell from '@/components/CopyCell.vue'
 import { api, type UserService } from '@/api'
 import { useUi } from '@/stores/ui'
 import { copyText, haptic } from '@/telegram/webapp'
 import { ago, date, daysLeft, fa, faDecimal, remaining } from '@/utils/format'
 
 const route = useRoute()
+const router = useRouter()
 const ui = useUi()
 const s = ref<UserService | null>(null)
 const showQr = ref(route.query.created === '1')
@@ -30,7 +30,7 @@ onMounted(async () => {
 const unlimited = computed(() => s.value?.totalGb === 0)
 const expired = computed(() => !!s.value && daysLeft(s.value.expireAt) === 0)
 const left = computed(() => (unlimited.value || !s.value ? 0 : Math.max(0, s.value.totalGb - s.value.usedGb)))
-const pct = computed(() => (unlimited.value || !s.value ? 0 : Math.round((s.value.usedGb / s.value.totalGb) * 100)))
+const pct = computed(() => (unlimited.value || !s.value ? 0 : Math.min(100, (s.value.usedGb / s.value.totalGb) * 100)))
 
 async function copyConfig() {
   if (!s.value) return
@@ -40,73 +40,76 @@ async function copyConfig() {
 </script>
 
 <template>
-  <div class="view">
-    <PageHeader :title="justCreated ? 'سرویس ساخته شد' : 'مشخصات سرویس'" back="/services" />
-    <main v-if="s" class="page no-nav">
-      <FMessageBar v-if="justCreated" intent="success" title="کانفیگ شما ساخته شد!">
-        لطفاً تحت هیچ شرایطی کانفیگ رو تو پیام‌رسان‌های داخلی یا پیامک ارسال نکن تا همه متصل بمونیم.
-      </FMessageBar>
+  <div class="screen">
+    <PageTitle :title="justCreated ? 'سرویس ساخته شد' : 'مشخصات سرویس'" back />
+    <List v-if="s">
+      <Banner v-if="justCreated" type="section">
+        <template #before><TgEmoji :id="E.rocket" fallback="checkCircle" :size="32" /></template>
+        <template #header>کانفیگ شما ساخته شد!</template>
+        <template #subheader>لطفاً تحت هیچ شرایطی کانفیگ رو تو پیام‌رسان‌های داخلی یا پیامک ارسال نکن تا همه متصل بمونیم.</template>
+      </Banner>
 
-      <FCard padding="lg">
-        <div class="row">
-          <ToneIcon :icon="s.icon" :tone="s.tone" :size="48" />
-          <div class="grow">
-            <div class="name ltr mono">{{ s.name }}</div>
-            <div class="muted cap">{{ s.planName }}</div>
-          </div>
-          <FBadge :tone="expired ? 'danger' : 'success'">{{ expired ? 'منقضی' : 'فعال' }}</FBadge>
+      <Section>
+        <Cell>
+          <template #before><ToneIcon :icon="s.icon" :tone="s.tone" :size="48" :emoji="s.emojiId" /></template>
+          <span class="ltr name">{{ s.name }}</span>
+          <template #subtitle>{{ s.planName }}</template>
+          <template #after><Tag :tone="s.unavailable ? 'neutral' : expired ? 'danger' : 'success'" :dot="!s.unavailable">{{ s.unavailable ? 'نامشخص' : expired ? 'منقضی' : 'فعال' }}</Tag></template>
+        </Cell>
+      </Section>
+
+      <Banner v-if="s.unavailable" type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+        <template #header>اطلاعات لحظه‌ای در دسترس نیست</template>
+        <template #subheader>ارتباط با سرور سرویس برقرار نشد؛ کمی بعد دوباره باز کن.</template>
+      </Banner>
+
+      <template v-else>
+        <Section>
+          <template #header>مصرف</template>
+          <Cell multiline>
+            <span class="num big">{{ faDecimal(s.usedGb) }}</span>
+            <span class="muted"> {{ unlimited ? 'گیگ مصرف‌شده' : `از ${fa(s.totalGb)} گیگابایت` }}</span>
+            <template #description>
+              <UsageBar v-if="!unlimited" :value="pct" thick class="bar" />
+              <span v-if="!unlimited" class="num">{{ faDecimal(left) }} گیگابایت باقی مانده</span>
+              <span v-else>حجم نامحدود</span>
+            </template>
+            <template #after><Tag v-if="!unlimited" :tone="pct >= 90 ? 'danger' : pct >= 75 ? 'warning' : 'info'">{{ fa(Math.round(pct)) }}٪</Tag><Tag v-else tone="success">نامحدود</Tag></template>
+          </Cell>
+          <Cell><template #before><TgEmoji :id="E.scope" fallback="clock" :size="26" /></template><template #after><span class="num" :class="{ bad: expired }">{{ remaining(s.expireAt) }}</span></template>زمان باقی‌مانده</Cell>
+          <Cell><template #before><TgEmoji :id="E.calendar" fallback="calendar" :size="26" /></template><template #after><span class="num">{{ date(s.expireAt) }}</span></template>تاریخ انقضا</Cell>
+          <Cell><template #before><TgEmoji :id="E.online" fallback="wifi" :size="26" /></template><template #after><span class="num">{{ ago(s.lastOnlineAt) }}</span></template>آخرین اتصال</Cell>
+        </Section>
+
+        <Section>
+          <template #header>لینک اتصال</template>
+          <div v-if="showQr" class="qr"><FQr :value="s.subscriptionUrl" :size="200" /></div>
+          <CopyCell label="آدرس ساب‌اسکریپشن" :value="s.subscriptionUrl" ltr />
+          <template #footer>
+            <div class="btns">
+              <Button stretched mode="bezeled" @click="showQr = !showQr"><template #before><FIcon name="qr" :size="18" /></template>{{ showQr ? 'پنهان‌کردن QR' : 'نمایش QR' }}</Button>
+              <Button stretched @click="copyConfig"><template #before><FIcon name="copy" :size="18" /></template>کپی کانفیگ</Button>
+            </div>
+          </template>
+        </Section>
+
+        <div v-if="!unlimited" class="pad">
+          <Button stretched size="l" mode="filled" @click="router.push(`/services/${s.id}/extend`)"><template #before><FIcon name="refresh" :size="18" /></template>تمدید سرویس</Button>
         </div>
-      </FCard>
-
-      <FMessageBar v-if="s.unavailable" intent="warning" title="اطلاعات لحظه‌ای در دسترس نیست">
-        ارتباط با سرور سرویس برقرار نشد؛ کمی بعد دوباره باز کن.
-      </FMessageBar>
-      <FCard v-else padding="lg">
-        <div class="usage">
-          <div class="num big">{{ faDecimal(s.usedGb) }}<small> {{ unlimited ? 'گیگ مصرف‌شده' : `از ${fa(s.totalGb)} گیگابایت` }}</small></div>
-          <FBadge v-if="!unlimited" :tone="pct >= 90 ? 'danger' : pct >= 75 ? 'warning' : 'brand'">{{ fa(pct) }}٪</FBadge>
-          <FBadge v-else tone="success"><FIcon name="infinity" :size="12" /> نامحدود</FBadge>
-        </div>
-        <FProgress v-if="!unlimited" :value="s.usedGb" :max="s.totalGb" thick class="bar" />
-        <p v-if="!unlimited" class="muted cap num">{{ faDecimal(left) }} گیگابایت باقی مانده</p>
-
-        <div class="divider" />
-        <div class="kv"><span><FIcon name="clock" :size="14" /> زمان باقی‌مانده</span><b class="num" :class="{ bad: expired }">{{ remaining(s.expireAt) }}</b></div>
-        <div class="kv"><span><FIcon name="calendar" :size="14" /> تاریخ انقضا</span><b class="num">{{ date(s.expireAt) }}</b></div>
-        <div class="kv"><span><FIcon name="wifi" :size="14" /> آخرین اتصال</span><b class="num">{{ ago(s.lastOnlineAt) }}</b></div>
-      </FCard>
-
-      <FCard v-if="!s.unavailable" padding="lg" class="cfg">
-        <div class="section-title"><span>لینک اتصال</span>
-          <FButton size="sm" appearance="subtle" icon="qr" @click="showQr = !showQr">{{ showQr ? 'پنهان' : 'QR' }}</FButton>
-        </div>
-        <Transition name="qr">
-          <div v-if="showQr" class="qrbox"><FQr :value="s.subscriptionUrl" :size="200" /></div>
-        </Transition>
-        <CopyRow label="آدرس ساب‌اسکریپشن" :value="s.subscriptionUrl" ltr />
-        <FButton appearance="primary" block icon="copy" @click="copyConfig">کپی کردن کانفیگ</FButton>
-      </FCard>
-
-      <FButton v-if="!unlimited && !s.unavailable" appearance="success" size="lg" block icon="refresh" @click="$router.push(`/services/${s.id}/extend`)">تمدید سرویس</FButton>
-    </main>
-
-    <main v-else class="page no-nav"><FSkeleton :h="88" :r="8" /><FSkeleton :h="200" :r="8" /><FSkeleton :h="220" :r="8" /></main>
+      </template>
+    </List>
+    <List v-else><Section><Skeleton visible><div style="height: 220px" /></Skeleton></Section></List>
   </div>
 </template>
 
 <style scoped>
-.name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
-.cap { font: var(--t-caption); }
-.usage { display: flex; align-items: center; justify-content: space-between; }
-.big { font: var(--t-title3); }
-.big small { font: var(--t-body); color: var(--fg-3); }
-.bar { margin: var(--s-m) 0 var(--s-s); }
-.kv span:first-child { display: inline-flex; align-items: center; gap: 6px; }
-.bad { color: var(--danger-fg); }
-.cfg { display: flex; flex-direction: column; gap: var(--s-m); }
-.cfg .section-title { margin: 0; }
-.qrbox { display: grid; place-items: center; padding: var(--s-s) 0; }
-.qr-enter-active, .qr-leave-active { transition: all var(--dur-slow) var(--ease-decel); overflow: hidden; }
-.qr-enter-from, .qr-leave-to { opacity: 0; max-height: 0; }
-.qr-enter-to, .qr-leave-from { max-height: 260px; }
+.name { font-size: 14px; font-weight: 600; }
+.big { font-size: 22px; font-weight: 700; }
+.muted { color: var(--tgui-hint-color); margin-inline-start: 6px; }
+.bar { margin: 10px 0 8px; }
+.ic { color: var(--tgui-hint-color); }
+.bad { color: var(--tgui-destructive-text-color); }
+.qr { display: grid; place-items: center; padding: 16px 0 4px; }
+.btns { display: flex; gap: 8px; padding-top: 4px; }
 </style>

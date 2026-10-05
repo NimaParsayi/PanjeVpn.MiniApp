@@ -39,5 +39,13 @@ export function createHttpApi(base: string): Api {
     startStarsDeposit: (priceToman) => call('POST', '/deposits/stars', { priceToman }),
     createGift: (amount) => call('POST', '/gifts', { amount }),
     sendBulkMessage: (text) => call('POST', '/admin/bulk-message', { text }),
+    async getEmoji(id) {
+      try {
+        const res = await fetch(`${base.replace(/\/$/, '')}/emoji/${encodeURIComponent(id)}`, { headers: { Authorization: `tma ${initData}` } })
+        return res.ok ? await res.arrayBuffer() : null
+      } catch {
+        return null
+      }
+    },
   }
 }

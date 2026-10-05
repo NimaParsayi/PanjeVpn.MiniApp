@@ -12,6 +12,9 @@ interface TgWebApp {
   expand(): void
   close(): void
   disableVerticalSwipes?(): void
+  platform?: string
+  requestFullscreen?(): void
+  isFullscreen?: boolean
   enableClosingConfirmation?(): void
   setHeaderColor?(c: string): void
   setBackgroundColor?(c: string): void
@@ -37,6 +40,14 @@ export const isTelegram = !!tg?.initData
 
 export const initData = tg?.initData ?? ''
 export const tgUser = tg?.initDataUnsafe?.user
+
+/** telegram-ui looks different on iOS (inset, rounded) and elsewhere ("base", Material-like). */
+export const uiPlatform: 'ios' | 'base' = (() => {
+  const q = new URLSearchParams(location.search).get('platform')
+  if (!isTelegram && (q === 'ios' || q === 'base')) return q
+  // Telegram's current design (inset rounded sections, floating glass bar) is the same on iOS and Android.
+  return 'ios'
+})()
 
 let presetIndex = 0
 export const paletteName = () => presets[presetIndex].name
@@ -66,6 +77,10 @@ export function initTelegram() {
   if (!tg) return
   tg.ready()
   tg.expand()
+  // Full-screen (Bot API 8.0+) hides Telegram's own header. Phones only: on desktop it would maximise the window.
+  if (['ios', 'android'].includes(tg.platform ?? '') && tg.isVersionAtLeast('8.0')) {
+    try { tg.requestFullscreen?.() } catch { /* not allowed / unsupported */ }
+  }
   tg.disableVerticalSwipes?.()
   tg.onEvent('themeChanged', applyTheme)
 }

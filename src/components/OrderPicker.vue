@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import FCard from './FCard.vue'
-import FStepper from './FStepper.vue'
-import FSegmented from './FSegmented.vue'
+import { Section, SegmentedControl, SegmentedControlItem } from 'telegram-ui-vue'
+import Stepper from './Stepper.vue'
 import type { Plan } from '@/api'
 import { canDecrease, canIncrease, isUnlimited, nextSize, prevSize } from '@/utils/pricing'
 import { fa } from '@/utils/format'
+import { haptic } from '@/telegram/webapp'
 
 const props = defineProps<{ plan: Plan }>()
 const size = defineModel<number>('size', { required: true })
 const daysIndex = defineModel<number>('daysIndex', { required: true })
-
 const unlimited = computed(() => isUnlimited(props.plan))
-const dayOptions = computed(() => props.plan.days.map((d, i) => ({ value: i, label: fa(d), sub: 'روز' })))
 
 function setSize(n: number) {
   const max = props.plan.maxSize === -1 ? Infinity : props.plan.maxSize
@@ -21,25 +19,32 @@ function setSize(n: number) {
 </script>
 
 <template>
-  <FCard padding="lg" class="picker">
-    <template v-if="!unlimited">
-      <FStepper
-        label="حجم" icon="chart" :display="fa(size)" unit="گیگابایت" editable :model-value="size"
-        :can-dec="canDecrease(plan, size)" :can-inc="canIncrease(plan, size)"
-        @dec="setSize(prevSize(plan, size))" @inc="setSize(nextSize(plan, size))" @update:model-value="setSize"
-      />
-      <p class="hint muted">
-        حداقل {{ fa(plan.minSize) }}{{ plan.maxSize === -1 ? '' : ` و حداکثر ${fa(plan.maxSize)}` }} گیگابایت · می‌تونی روی عدد بزنی و حجم دلخواه بنویسی.
-      </p>
-      <div class="divider" />
+  <Section v-if="!unlimited">
+    <template #header>حجم</template>
+    <Stepper
+      label="حجم" unit="گیگابایت" :display="fa(size)" editable :model-value="size"
+      :can-dec="canDecrease(plan, size)" :can-inc="canIncrease(plan, size)"
+      @dec="setSize(prevSize(plan, size))" @inc="setSize(nextSize(plan, size))" @update:model-value="setSize"
+    />
+    <template #footer>
+      حداقل {{ fa(plan.minSize) }}{{ plan.maxSize === -1 ? '' : ` و حداکثر ${fa(plan.maxSize)}` }} گیگابایت. می‌تونی روی عدد بزنی و حجم دلخواه بنویسی.
     </template>
-    <div class="sub">مدت زمان</div>
-    <FSegmented v-model="daysIndex" :options="dayOptions" />
-  </FCard>
+  </Section>
+
+  <Section>
+    <template #header>مدت زمان (روز)</template>
+    <div class="seg">
+      <SegmentedControl>
+        <SegmentedControlItem v-for="(d, i) in plan.days" :key="i" :selected="i === daysIndex" @click="haptic.select(); daysIndex = i">
+          {{ fa(d) }}
+        </SegmentedControlItem>
+      </SegmentedControl>
+    </div>
+  </Section>
 </template>
 
 <style scoped>
-.picker { display: flex; flex-direction: column; gap: var(--s-m); }
-.hint { font: var(--t-caption); margin-top: calc(var(--s-xs) * -1); }
-.sub { font: var(--t-body-strong); color: var(--fg-2); }
+.seg { padding: 8px 16px 12px; }
+/* The kit pads items for 2-3 options; we can have five durations. */
+.seg :deep([class*='segmented-control-item']) { padding-inline: 4px; min-width: 0; }
 </style>

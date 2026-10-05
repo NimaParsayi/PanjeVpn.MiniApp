@@ -1,0 +1,154 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Liquid Glass layer for telegram-ui-vue (matches the look Telegram moved to on iOS and Android):
+   floating glass bar and controls, capsule buttons, soft large radii, one spacing rhythm.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Persian letters and digits: Vazirmatn (consistent weight and metrics on every device).
+     Everything else (Latin, ids, symbols): the platform UI font, like Telegram itself. */
+  --font: 'Vazir Persian', -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* One spacing rhythm (4px grid) */
+  --gutter: 16px;     /* screen side padding, shared by every block */
+  --block-gap: 20px;  /* between sections / cards */
+  --radius-card: 22px;
+  --radius-sheet: 28px;
+  --nav-h: 86px;      /* floating bar + its margin, used for bottom padding */
+}
+
+.app-root {
+  --glass-bg: color-mix(in srgb, var(--tgui-section-bg-color) 58%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--tgui-section-bg-color) 80%, transparent);
+  --glass-edge: rgba(255, 255, 255, 0.55);
+  --glass-hl: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 12px 32px rgba(24, 36, 72, 0.16), 0 2px 8px rgba(24, 36, 72, 0.08);
+  --glass-filter: blur(26px) saturate(190%);
+  font-family: var(--font);
+}
+.app-root--dark {
+  --glass-bg: color-mix(in srgb, var(--tgui-section-bg-color) 52%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--tgui-section-bg-color) 78%, transparent);
+  --glass-edge: rgba(255, 255, 255, 0.14);
+  --glass-hl: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  --glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.app-root, .app-root * { font-family: inherit; }
+.app-root .mono, .app-root .ltr.mono { font-family: var(--mono); }
+/* Persian joins letters; tracking would break the strokes. */
+.app-root * { letter-spacing: normal; }
+
+/* Soft aurora behind everything, so the glass has something to refract. */
+.app-root { position: relative; isolation: isolate; background: transparent !important; }
+.app-root::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(70% 38% at 108% -4%, color-mix(in srgb, var(--tgui-button-color) 26%, transparent), transparent 70%),
+    radial-gradient(60% 34% at -12% 14%, color-mix(in srgb, #8a63ff 14%, transparent), transparent 70%),
+    var(--tgui-secondary-bg-color);
+}
+
+/* ── Lists & sections: one gutter, one gap ─────────────────────────── */
+.app-root .list { padding: 8px var(--gutter) 0 !important; }
+.app-root .section { margin-bottom: var(--block-gap) !important; }
+.app-root .section .body { border-radius: var(--radius-card) !important; overflow: hidden; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+.app-root .section-header { padding: 0 16px 8px !important; }
+.app-root .section-header h1 { text-transform: none !important; font-size: 13px; font-weight: 500; opacity: .85; }
+.app-root .section-footer { padding: 8px 16px 0 !important; font-size: 13px; line-height: 1.6; }
+.app-root .cell { min-height: 56px; padding-inline: 16px !important; }
+
+/* ── Buttons: capsule, glassy secondary, glossy primary ───────────── */
+.app-root .button { border-radius: 999px !important; font-weight: 600; transition: transform 160ms cubic-bezier(.34, 1.56, .64, 1), filter 160ms; }
+.app-root .button:active { transform: scale(0.97); }
+.app-root .button--l { min-height: 52px; }
+.app-root .button--filled {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tgui-button-color) 88%, #fff), var(--tgui-button-color)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 22px color-mix(in srgb, var(--tgui-button-color) 36%, transparent);
+}
+.app-root .button--gray, .app-root .button--bezeled, .app-root .button--white, .app-root .button--outline {
+  background: var(--glass-bg) !important; backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset;
+}
+.app-root .button--bezeled { color: var(--tgui-link-color) !important; }
+.app-root .button--gray { color: var(--tgui-text-color) !important; }
+
+/* ── Floating glass tab bar (identical on both platforms) ──────────── */
+.app-root .app-tabbar {
+  left: var(--gutter) !important; right: var(--gutter) !important;
+  bottom: calc(var(--safe-bottom) + 10px) !important; top: auto !important;
+  width: auto !important; max-width: 420px; margin-inline: auto !important;
+  height: 64px !important; padding: 6px !important; gap: 4px;
+  border-radius: 999px !important; border: 0 !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset, var(--glass-shadow);
+}
+.app-root .app-tabbar .tabbar-item { flex: 1; min-width: 0; border-radius: 999px !important; padding: 4px 2px !important; gap: 0; color: var(--tgui-hint-color); }
+.app-root .app-tabbar .tabbar-item--selected {
+  color: var(--tgui-link-color);
+  background: color-mix(in srgb, var(--tgui-button-color) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.app-root .app-tabbar .text { font-size: 11px !important; line-height: 14px !important; font-weight: 600 !important; overflow: visible !important; text-overflow: clip !important; white-space: nowrap; }
+
+/* ── Segmented control: glass capsule ──────────────────────────────── */
+.app-root .segmented-control {
+  border-radius: 999px !important; padding: 3px !important;
+  background: var(--glass-bg) !important; backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset;
+}
+.app-root .segmented-control-item { border-radius: 999px !important; }
+
+/* ── Sheets, toasts, inputs ────────────────────────────────────────── */
+.app-root [class*='modal'][class*='content'], .modal-content, [data-vaul-drawer] {
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0 !important;
+  background: var(--glass-bg-strong) !important; backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22), var(--glass-hl);
+}
+.app-root .snackbar {
+  border-radius: 999px !important; background: var(--glass-bg-strong) !important; color: var(--tgui-text-color) !important;
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset, var(--glass-shadow);
+}
+.app-root .form-input .body { border-radius: 16px !important; }
+
+/* ── Our own blocks ────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--glass-bg); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  border-radius: var(--radius-card); box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset, var(--glass-shadow);
+}
+.glass-round {
+  display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; cursor: pointer; padding: 0;
+  background: var(--glass-bg); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset, var(--glass-shadow); color: var(--tgui-text-color);
+}
+
+/* ═══ Typography tuned for Persian ═══════════════════════════════════════
+   The kit's Latin-oriented metrics (e.g. 16px text on a 16px line) make Persian lines collide, because the script
+   has tall dots and long descenders. Persian wants ~1.6-1.8 line height, a clear size ladder and slightly firmer
+   secondary text. */
+.app-root { text-rendering: optimizeLegibility; font-kerning: normal; -webkit-text-size-adjust: 100%; }
+.app-root .typography { line-height: 1.65 !important; }
+
+/* Cell: title 16 → subtitle 14 → description 13 */
+.app-root .cell { padding-block: 12px !important; }
+.app-root .cell .title { font-size: 16px !important; line-height: 1.6 !important; font-weight: 500 !important; }
+.app-root .cell .subtitle { font-size: 14px !important; line-height: 1.6 !important; font-weight: 400 !important; }
+.app-root .cell .description { font-size: 13px !important; line-height: 1.75 !important; font-weight: 400 !important; }
+.app-root .cell .subhead { font-size: 12px !important; line-height: 1.6 !important; font-weight: 500 !important; }
+.app-root .cell .subtitle, .app-root .cell .description, .app-root .cell .subhead {
+  color: color-mix(in srgb, var(--tgui-hint-color) 80%, var(--tgui-text-color));
+}
+
+/* Section chrome and banners */
+.app-root .section-header h1 { font-size: 13px !important; font-weight: 600 !important; line-height: 1.6 !important; }
+.app-root .section-footer { font-size: 13px !important; line-height: 1.75 !important; }
+.app-root .banner [class*='header'] { font-size: 16px !important; font-weight: 600 !important; line-height: 1.6 !important; }
+.app-root .banner [class*='subheader'], .app-root .banner [class*='description'] { font-size: 14px !important; line-height: 1.7 !important; font-weight: 400 !important; }
+.app-root .placeholder [class*='header'] { font-size: 20px !important; font-weight: 700 !important; line-height: 1.5 !important; }
+.app-root .placeholder [class*='description'] { font-size: 15px !important; line-height: 1.75 !important; }
+
+/* Latin identifiers (config names, ids) share the UI font instead of a monospace that clashes with Persian.
+   Monospace stays only for addresses, memos and links, where exact characters matter. */
+.app-root .ltr { font-variant-ligatures: none; font-feature-settings: 'tnum'; }
+.app-root .ltr:not(.mono) { font-family: var(--font); }

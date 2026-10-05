@@ -20,6 +20,14 @@ export function remaining(iso: string, now = Date.now()): string {
   return `${fa(Math.max(m, 1))} دقیقه`
 }
 
+/** One unit only ("۱۷ روز", "۵ ساعت"), for tight list rows. */
+export function remainingShort(iso: string, now = Date.now()): string {
+  const ms = new Date(iso).getTime() - now
+  if (ms <= 0) return 'منقضی شده'
+  const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4)
+  return d > 0 ? `${fa(d)} روز` : h > 0 ? `${fa(h)} ساعت` : `${fa(Math.max(m, 1))} دقیقه`
+}
+
 export const daysLeft = (iso: string, now = Date.now()) => Math.max(0, Math.ceil((new Date(iso).getTime() - now) / 864e5))
 
 /** "۲ ساعت پیش" */

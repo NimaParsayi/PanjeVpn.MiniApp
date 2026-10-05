@@ -1,35 +1,40 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import PageHeader from '@/components/PageHeader.vue'
-import ServiceItem from '@/components/ServiceItem.vue'
-import FEmpty from '@/components/FEmpty.vue'
-import FButton from '@/components/FButton.vue'
-import FSkeleton from '@/components/FSkeleton.vue'
+import TgEmoji from '@/components/TgEmoji.vue'
+import { E } from '@/emoji/ids'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Button, Divider, List, Placeholder, Section, Skeleton } from 'telegram-ui-vue'
+import PageTitle from '@/components/PageTitle.vue'
+import ServiceCell from '@/components/ServiceCell.vue'
+import FIcon from '@/components/FIcon.vue'
 import { useApp } from '@/stores/app'
 import { fa } from '@/utils/format'
 
 const app = useApp()
-const busy = ref(false)
-async function refresh() { busy.value = true; try { await app.refreshServices() } finally { busy.value = false } }
-onMounted(refresh)
+const router = useRouter()
+onMounted(() => { void app.refreshServices().catch(() => {}) })
 </script>
 
 <template>
-  <div class="view">
-    <PageHeader title="سرویس‌های من" :subtitle="app.services.length ? `${fa(app.services.length)} سرویس` : undefined">
-      <FButton appearance="subtle" size="sm" icon="refresh" :loading="busy" aria-label="بروزرسانی" @click="refresh" />
-    </PageHeader>
-    <main class="page">
-      <template v-if="app.services.length">
-        <p class="muted hint">با انتخاب هر سرویس مشخصات، حجم و زمان باقی‌مانده رو می‌بینی.</p>
-        <ServiceItem v-for="s in app.services" :key="s.id" :service="s" />
-      </template>
-      <template v-else-if="busy"><FSkeleton :h="96" :r="8" /><FSkeleton :h="96" :r="8" /></template>
-      <FEmpty v-else icon="shieldCheck" title="هنوز سرویسی نداری" text="با خرید اولین سرویس، اینجا لیستشون رو می‌بینی.">
-        <FButton appearance="primary" icon="cart" @click="$router.push('/buy')">خرید سرویس</FButton>
-      </FEmpty>
-    </main>
+  <div class="screen with-tabs">
+    <PageTitle title="سرویس‌های من" :subtitle="app.services.length ? `${fa(app.services.length)} سرویس` : undefined">
+      <Button mode="gray" size="s" aria-label="بروزرسانی" :loading="app.servicesLoading" @click="app.refreshServices()"><FIcon name="refresh" :size="18" /></Button>
+    </PageTitle>
+    <List>
+      <Section v-if="app.services.length">
+        <template #footer>با انتخاب هر سرویس مشخصات، حجم و زمان باقی‌مانده رو می‌بینی.</template>
+        <template v-for="(s, i) in app.services" :key="s.id">
+          <Divider v-if="i" />
+          <ServiceCell :service="s" />
+        </template>
+      </Section>
+      <Section v-else-if="app.servicesLoading"><Skeleton visible><div style="height: 96px" /></Skeleton></Section>
+      <Placeholder v-else>
+        <TgEmoji :id="E.panda" fallback="shieldCheck" :size="120" loop />
+        <template #header>هنوز سرویسی نداری</template>
+        <template #description>با خرید اولین سرویس، اینجا لیستشون رو می‌بینی.</template>
+        <template #action><Button size="m" @click="router.push('/buy')"><template #before><FIcon name="cart" :size="18" /></template>خرید سرویس</Button></template>
+      </Placeholder>
+    </List>
   </div>
 </template>
-
-<style scoped>.hint { font: var(--t-caption); }</style>
