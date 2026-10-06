@@ -60,7 +60,9 @@
 /* ── Buttons: capsule, glassy secondary, glossy primary ───────────── */
 .app-root .button { border-radius: 999px !important; font-weight: 600; transition: transform 160ms cubic-bezier(.34, 1.56, .64, 1), filter 160ms; }
 .app-root .button:active { transform: scale(0.97); }
-.app-root .button--l { min-height: 52px; }
+.app-root .button { font-size: 15px; }
+.app-root .button--s { font-size: 13px; }
+.app-root .button--l { min-height: 50px; font-size: 15px; }
 .app-root .button--filled {
   background: linear-gradient(180deg, color-mix(in srgb, var(--tgui-button-color) 88%, #fff), var(--tgui-button-color)) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 22px color-mix(in srgb, var(--tgui-button-color) 36%, transparent);
@@ -89,7 +91,7 @@
   background: color-mix(in srgb, var(--tgui-button-color) 16%, transparent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
-.app-root .app-tabbar .text { font-size: 11px !important; line-height: 14px !important; font-weight: 600 !important; overflow: visible !important; text-overflow: clip !important; white-space: nowrap; }
+.app-root .app-tabbar .text { font-size: 10.5px !important; line-height: 14px !important; font-weight: 600 !important; overflow: visible !important; text-overflow: clip !important; white-space: nowrap; }
 
 /* ── Segmented control: glass capsule ──────────────────────────────── */
 .app-root .segmented-control {
@@ -111,6 +113,7 @@
   box-shadow: var(--glass-hl), 0 0 0 1px var(--glass-edge) inset, var(--glass-shadow);
 }
 .app-root .form-input .body { border-radius: 16px !important; }
+.app-root .tgui-input__inner, .app-root .textarea { font-size: 15px !important; }
 
 /* ── Our own blocks ────────────────────────────────────────────────── */
 .glass-card {
@@ -132,21 +135,21 @@
 
 /* Cell: title 16 → subtitle 14 → description 13 */
 .app-root .cell { padding-block: 12px !important; }
-.app-root .cell .title { font-size: 16px !important; line-height: 1.6 !important; font-weight: 500 !important; }
-.app-root .cell .subtitle { font-size: 14px !important; line-height: 1.6 !important; font-weight: 400 !important; }
-.app-root .cell .description { font-size: 13px !important; line-height: 1.75 !important; font-weight: 400 !important; }
-.app-root .cell .subhead { font-size: 12px !important; line-height: 1.6 !important; font-weight: 500 !important; }
+.app-root .cell .title { font-size: 15px !important; line-height: 1.6 !important; font-weight: 500 !important; }
+.app-root .cell .subtitle { font-size: 13px !important; line-height: 1.6 !important; font-weight: 400 !important; }
+.app-root .cell .description { font-size: 12px !important; line-height: 1.75 !important; font-weight: 400 !important; }
+.app-root .cell .subhead { font-size: 11px !important; line-height: 1.6 !important; font-weight: 500 !important; }
 .app-root .cell .subtitle, .app-root .cell .description, .app-root .cell .subhead {
   color: color-mix(in srgb, var(--tgui-hint-color) 80%, var(--tgui-text-color));
 }
 
 /* Section chrome and banners */
-.app-root .section-header h1 { font-size: 13px !important; font-weight: 600 !important; line-height: 1.6 !important; }
-.app-root .section-footer { font-size: 13px !important; line-height: 1.75 !important; }
-.app-root .banner [class*='header'] { font-size: 16px !important; font-weight: 600 !important; line-height: 1.6 !important; }
-.app-root .banner [class*='subheader'], .app-root .banner [class*='description'] { font-size: 14px !important; line-height: 1.7 !important; font-weight: 400 !important; }
-.app-root .placeholder [class*='header'] { font-size: 20px !important; font-weight: 700 !important; line-height: 1.5 !important; }
-.app-root .placeholder [class*='description'] { font-size: 15px !important; line-height: 1.75 !important; }
+.app-root .section-header h1 { font-size: 12px !important; font-weight: 600 !important; line-height: 1.6 !important; }
+.app-root .section-footer { font-size: 12px !important; line-height: 1.75 !important; }
+.app-root .banner [class*='header'] { font-size: 15px !important; font-weight: 600 !important; line-height: 1.6 !important; }
+.app-root .banner [class*='subheader'], .app-root .banner [class*='description'] { font-size: 13px !important; line-height: 1.7 !important; font-weight: 400 !important; }
+.app-root .placeholder [class*='header'] { font-size: 18px !important; font-weight: 700 !important; line-height: 1.5 !important; }
+.app-root .placeholder [class*='description'] { font-size: 14px !important; line-height: 1.75 !important; }
 
 /* Latin identifiers (config names, ids) share the UI font instead of a monospace that clashes with Persian.
    Monospace stays only for addresses, memos and links, where exact characters matter. */

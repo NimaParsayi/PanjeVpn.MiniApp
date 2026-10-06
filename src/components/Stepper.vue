@@ -36,7 +36,7 @@ function commit() {
 <style scoped>
 .ctl { display: flex; align-items: center; gap: 4px; }
 .val { min-width: 72px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; color: var(--tgui-text-color); }
-.val b, .inp { font-size: 18px; font-weight: 600; text-align: center; }
+.val b, .inp { font-size: 16px; font-weight: 600; text-align: center; }
 .inp { width: 64px; border: 0; background: transparent; outline: none; color: inherit; padding: 0; }
-small { font-size: 12px; color: var(--tgui-hint-color); }
+small { font-size: 11px; color: var(--tgui-hint-color); }
 </style>

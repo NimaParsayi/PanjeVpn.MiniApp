@@ -4,6 +4,7 @@ import { E } from '@/emoji/ids'
 import { computed } from 'vue'
 import { Avatar, Button, Cell, Divider, List, Section, Skeleton } from 'telegram-ui-vue'
 import Tag from '@/components/Tag.vue'
+import BotLogo from '@/components/BotLogo.vue'
 import PageTitle from '@/components/PageTitle.vue'
 import FIcon from '@/components/FIcon.vue'
 import ToneIcon from '@/components/ToneIcon.vue'
@@ -40,6 +41,7 @@ function nextPalette() {
 <template>
   <div class="screen with-tabs">
     <PageTitle :title="`${greeting}، ${me.displayName}`" subtitle="به پنجه خوش اومدی">
+      <template #lead><BotLogo :size="52" /></template>
       <button v-if="!isTelegram" class="glass-round" type="button" aria-label="تغییر پالت رنگی" @click="nextPalette"><FIcon name="sparkle" :size="20" /></button>
       <Avatar v-else :size="40" :src="tgUser?.photo_url" :acronym="me.displayName.slice(0, 1)" />
     </PageTitle>
@@ -58,6 +60,14 @@ function nextPalette() {
           <Button size="s" mode="plain" class="ghost" @click="router.push('/wallet')">جزئیات</Button>
         </div>
       </div>
+    </div>
+
+    <div v-if="me.isAdmin" class="pad admin-wrap">
+      <Button stretched size="l" mode="gray" class="admin-cta" @click="router.push('/admin')">
+        <template #before><TgEmoji :id="E.broadcast" fallback="megaphone" :size="28" /></template>
+        باز کردن پنل ادمین
+        <template #after><FIcon name="chevronEnd" :size="18" /></template>
+      </Button>
     </div>
 
     <List>
@@ -93,12 +103,6 @@ function nextPalette() {
           <template #subtitle>دعوت دوستان و دریافت پورسانت</template>
           <template #after><Tag tone="neutral">به‌زودی</Tag></template>
         </Cell>
-        <Cell v-if="me.isAdmin" @click="router.push('/admin')">
-          <template #before><ToneIcon icon="megaphone" tone="danger" :emoji="E.broadcast" /></template>
-          پنل ادمین
-          <template #subtitle>ارسال پیام همگانی</template>
-          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
-        </Cell>
       </Section>
 
       <Section v-if="recent.length">
@@ -120,6 +124,8 @@ function nextPalette() {
 .chev { color: var(--tgui-hint-color); }
 .more { color: var(--tgui-link-color); cursor: pointer; }
 .hero-wrap { margin-bottom: 12px; }
+.admin-wrap { margin-bottom: 12px; }
+.admin-cta { justify-content: flex-start; gap: 10px; }
 .hero {
   position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-card); padding: 20px;
   background: linear-gradient(135deg, var(--tgui-button-color) 0%, color-mix(in oklab, var(--tgui-button-color) 55%, #7a5cff) 100%);
@@ -130,10 +136,10 @@ function nextPalette() {
 .hero::before { inset-inline-end: -60px; top: -70px; width: 220px; height: 220px; background: radial-gradient(circle, color-mix(in srgb, var(--tgui-button-text-color) 30%, transparent), transparent 66%); }
 .hero::after { inset-inline-start: -50px; bottom: -80px; width: 180px; height: 180px; background: radial-gradient(circle, color-mix(in srgb, var(--tgui-button-text-color) 16%, transparent), transparent 66%); }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.lbl { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; opacity: .95; }
+.lbl { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; opacity: .95; }
 .idchip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 99px; border: 0; background: color-mix(in srgb, var(--tgui-button-text-color) 18%, transparent); color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
-.amount { font-size: 36px; font-weight: 700; line-height: 44px; margin: 12px 0 16px; display: flex; align-items: baseline; gap: 8px; }
-.amount small { font-size: 14px; font-weight: 400; opacity: .8; }
+.amount { font-size: 32px; font-weight: 700; line-height: 40px; margin: 12px 0 16px; display: flex; align-items: baseline; gap: 8px; }
+.amount small { font-size: 13px; font-weight: 400; opacity: .8; }
 .acts { display: flex; gap: 8px; }
 .wbtn { white-space: nowrap; background: #fff !important; color: color-mix(in srgb, var(--tgui-button-color) 72%, #000) !important; }
 .ghost { color: inherit !important; }

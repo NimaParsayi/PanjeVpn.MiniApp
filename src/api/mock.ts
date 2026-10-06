@@ -153,6 +153,29 @@ export const mockApi: Api = {
   },
 
   getEmoji: async () => null, // no bot in demo mode → components fall back to vector icons
+  getLogo: async () => null,
+
+  getAdminStats: () => wait({
+    users: 1280, usersLast7Days: 64, services: 912, servicesLast7Days: 41, walletTotal: 38_450_000,
+    depositsTotal: 412_000_000, depositsLast30Days: 96_500_000, giftsUnused: 7, giftsUnusedAmount: 1_450_000,
+  }),
+  async lookupUser(q) {
+    const key = q.trim().replace(/^@/, '')
+    if (!key || key === 'nobody') throw new ApiError('کاربری با این مشخصات پیدا نشد (باید قبلاً ربات رو استارت کرده باشه).')
+    return wait({ telegramId: /^\d+$/.test(key) ? Number(key) : 555000111, username: /^\d+$/.test(key) ? null : key, wallet: 120_000, services: 2 })
+  },
+  async adminCharge({ telegramId, username, amount }) {
+    if (amount <= 0) throw new ApiError('مبلغ باید بیشتر از صفر باشه.')
+    return wait({ telegramId: telegramId ?? 555000111, username: username ?? null, wallet: 120_000 + amount, services: 2 }, 700)
+  },
+  getAdminServices: (page, q) => {
+    const all = Array.from({ length: 47 }, (_, i) => ({
+      id: `a${i}`, name: `${555000000 + (i % 9)}-demo${String(i).padStart(2, '0')}`, planName: plans[i % 3].name,
+      tone: plans[i % 3].tone, icon: plans[i % 3].icon, emojiId: null, ownerTelegramId: 555000000 + (i % 9),
+      ownerUsername: i % 2 ? `user_${i % 9}` : null, priceAtTime: 90_000 + i * 1_500, createdAt: hoursAgo(i * 9),
+    })).filter((s) => !q.trim() || `${s.name} ${s.ownerUsername ?? ''} ${s.ownerTelegramId}`.toLowerCase().includes(q.trim().replace(/^@/, '').toLowerCase()))
+    return wait({ items: all.slice((page - 1) * 20, page * 20), total: all.length, page, pageSize: 20 })
+  },
 
   sendBulkMessage: async () => wait({ total: 1280, success: 1243, failed: 37 }, 1800),
 }

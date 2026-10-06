@@ -71,8 +71,8 @@ const balance = useCountUp(computed(() => app.me!.wallet))
   background: linear-gradient(135deg, var(--tgui-button-color), color-mix(in oklab, var(--tgui-button-color) 55%, #7a5cff));
   color: var(--tgui-button-text-color); box-shadow: 0 10px 28px color-mix(in srgb, var(--tgui-button-color) 32%, transparent); }
 .hero::before { content: ''; position: absolute; inset-inline-end: -60px; top: -70px; width: 220px; height: 220px; border-radius: 50%; z-index: -1; background: radial-gradient(circle, color-mix(in srgb, var(--tgui-button-text-color) 28%, transparent), transparent 66%); }
-.lbl { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; opacity: .95; }
-.amount { font-size: 38px; font-weight: 700; line-height: 46px; display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.lbl { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; opacity: .95; }
+.amount { font-size: 32px; font-weight: 700; line-height: 40px; display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
 .amount small { font-size: 14px; font-weight: 400; opacity: .8; }
-.sub { font-size: 12px; opacity: .8; margin-top: 2px; }
+.sub { font-size: 11px; opacity: .8; margin-top: 2px; }
 </style>

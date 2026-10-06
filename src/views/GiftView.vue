@@ -96,15 +96,15 @@ async function create() {
 
 <style scoped>
 .disp { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px; text-align: center; }
-.amt { font-size: 40px; font-weight: 800; line-height: 1.4; display: flex; align-items: baseline; gap: 8px; }
+.amt { font-size: 34px; font-weight: 700; line-height: 1.4; display: flex; align-items: baseline; gap: 8px; }
 .amt small { font-size: 14px; font-weight: 400; color: var(--tgui-hint-color); }
 .amt.zero { color: var(--tgui-hint-color); }
-.muted { color: var(--tgui-hint-color); font-size: 13px; }
+.muted { color: var(--tgui-hint-color); font-size: 12px; }
 .bad { color: var(--tgui-destructive-text-color); }
 .quick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
 .pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; direction: ltr; }
 .key { height: 54px; }
-.k { font-size: 22px; font-weight: 600; }
+.k { font-size: 20px; font-weight: 600; }
 .sheet { padding-bottom: calc(var(--safe-bottom) + 12px); }
 .cta { margin-top: 12px; }
 </style>

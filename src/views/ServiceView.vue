@@ -29,6 +29,7 @@ onMounted(async () => {
 
 const unlimited = computed(() => s.value?.totalGb === 0)
 const expired = computed(() => !!s.value && daysLeft(s.value.expireAt) === 0)
+const soon = computed(() => !!s.value && !expired.value && (daysLeft(s.value.expireAt) <= 3 || (!unlimited.value && s.value.usedGb / s.value.totalGb >= 0.9)))
 const left = computed(() => (unlimited.value || !s.value ? 0 : Math.max(0, s.value.totalGb - s.value.usedGb)))
 const pct = computed(() => (unlimited.value || !s.value ? 0 : Math.min(100, (s.value.usedGb / s.value.totalGb) * 100)))
 
@@ -57,6 +58,13 @@ async function copyConfig() {
           <template #after><Tag :tone="s.unavailable ? 'neutral' : expired ? 'danger' : 'success'" :dot="!s.unavailable">{{ s.unavailable ? 'نامشخص' : expired ? 'منقضی' : 'فعال' }}</Tag></template>
         </Cell>
       </Section>
+
+      <div v-if="!unlimited && !s.unavailable" class="extend">
+        <Button stretched size="l" mode="filled" @click="router.push(`/services/${s.id}/extend`)">
+          <template #before><FIcon name="refresh" :size="20" /></template>تمدید سرویس
+        </Button>
+        <span v-if="expired || soon" class="extend-note">{{ expired ? 'این سرویس منقضی شده؛ برای ادامه‌ی اتصال تمدیدش کن.' : 'مدت این سرویس داره تموم می‌شه.' }}</span>
+      </div>
 
       <Banner v-if="s.unavailable" type="section">
         <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
@@ -94,9 +102,6 @@ async function copyConfig() {
           </template>
         </Section>
 
-        <div v-if="!unlimited" class="pad">
-          <Button stretched size="l" mode="filled" @click="router.push(`/services/${s.id}/extend`)"><template #before><FIcon name="refresh" :size="18" /></template>تمدید سرویس</Button>
-        </div>
       </template>
     </List>
     <List v-else><Section><Skeleton visible><div style="height: 220px" /></Skeleton></Section></List>
@@ -104,10 +109,12 @@ async function copyConfig() {
 </template>
 
 <style scoped>
-.name { font-size: 14px; font-weight: 600; }
-.big { font-size: 22px; font-weight: 700; }
+.name { font-size: 13px; font-weight: 600; }
+.big { font-size: 20px; font-weight: 700; }
 .muted { color: var(--tgui-hint-color); margin-inline-start: 6px; }
 .bar { margin: 10px 0 8px; }
+.extend { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--block-gap); }
+.extend-note { font-size: 12px; line-height: 1.7; color: var(--tgui-hint-color); text-align: center; }
 .ic { color: var(--tgui-hint-color); }
 .bad { color: var(--tgui-destructive-text-color); }
 .qr { display: grid; place-items: center; padding: 16px 0 4px; }

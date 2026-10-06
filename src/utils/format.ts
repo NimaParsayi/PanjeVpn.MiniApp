@@ -2,6 +2,9 @@ const nf = new Intl.NumberFormat('fa-IR')
 const nf1 = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 })
 const df = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' })
 
+/** Persian/Arabic digits → ASCII, so numbers typed on a Persian keyboard parse. */
+export const asciiDigits = (s: string) => s.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+
 export const fa = (n: number) => nf.format(n)
 export const faDecimal = (n: number) => nf1.format(n)
 export const toman = (n: number) => `${nf.format(Math.round(n))} تومان`

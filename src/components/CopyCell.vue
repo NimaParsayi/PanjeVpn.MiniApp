@@ -23,6 +23,6 @@ async function copy() {
 
 <style scoped>
 .v { word-break: break-all; }
-.v.mono { font-size: 13px; }
+.v.mono { font-size: 12px; }
 .ic { color: var(--tgui-link-color); }
 </style>

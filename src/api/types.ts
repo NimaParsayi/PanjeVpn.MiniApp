@@ -76,6 +76,40 @@ export interface Api {
   sendBulkMessage(text: string): Promise<BulkResult>
   /** Raw .tgs bytes (gzipped Lottie) of a Telegram custom emoji, or null when unavailable. */
   getEmoji(id: string): Promise<ArrayBuffer | null>
+  /** The bot's profile photo (BotFather /setuserpic), or null when none is set. */
+  getLogo(): Promise<Blob | null>
+  // Admin
+  getAdminStats(): Promise<AdminStats>
+  lookupUser(q: string): Promise<AdminUser>
+  adminCharge(input: AdminChargeInput): Promise<AdminUser>
+  getAdminServices(page: number, q: string): Promise<AdminServicesPage>
 }
+
+export interface AdminStats {
+  users: number
+  usersLast7Days: number
+  services: number
+  servicesLast7Days: number
+  walletTotal: number
+  depositsTotal: number
+  depositsLast30Days: number
+  giftsUnused: number
+  giftsUnusedAmount: number
+}
+export interface AdminUser { telegramId: number; username: string | null; wallet: number; services: number }
+export interface AdminService {
+  id: string
+  name: string
+  planName: string
+  tone: Tone
+  icon: string
+  emojiId?: string | null
+  ownerTelegramId: number
+  ownerUsername: string | null
+  priceAtTime: number
+  createdAt: string
+}
+export interface AdminServicesPage { items: AdminService[]; total: number; page: number; pageSize: number }
+export interface AdminChargeInput { telegramId?: number; username?: string; amount: number }
 
 export class ApiError extends Error {}
