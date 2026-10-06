@@ -14,7 +14,7 @@ import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
 import { confetti } from '@/utils/confetti'
 import { haptic, openInvoice } from '@/telegram/webapp'
-import { countdown, fa, toman } from '@/utils/format'
+import { asciiDigits, compactToman, countdown, fa, faDigits, toman } from '@/utils/format'
 
 const MIN = 200_000
 const presets = [200_000, 300_000, 500_000, 600_000, 800_000, 1_000_000, 1_500_000, 2_000_000]
@@ -41,8 +41,7 @@ onBeforeUnmount(() => clearInterval(timer))
 const left = computed(() => (ton.value ? new Date(ton.value.expiresAt).getTime() - now.value : 0))
 const expired = computed(() => !!ton.value && left.value <= 0)
 
-const digits = (s: string) => s.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/\D/g, '')
-const customValue = computed(() => Number(digits(custom.value)) || 0)
+const customValue = computed(() => Number(asciiDigits(custom.value).replace(/\D/g, '')) || 0)
 const customError = computed(() => (custom.value && customValue.value < MIN ? `حداقل مبلغ شارژ ${toman(MIN)} است` : ''))
 const finalAmount = computed(() => (custom.value ? customValue.value : amount.value))
 const canContinue = computed(() => finalAmount.value >= MIN)
@@ -115,13 +114,13 @@ async function payStars() {
           <template #header>مقدار مورد نظر برای شارژ</template>
           <div class="chips">
             <Button v-for="p in presets" :key="p" :mode="!custom && amount === p ? 'filled' : 'gray'" size="m" @click="pick(p)">
-              <span class="num">{{ fa(p) }}</span>&nbsp;<small>تومان</small>
+              <span class="num">{{ compactToman(p) }}</span>&nbsp;<small>تومان</small>
             </Button>
           </div>
         </Section>
         <Section>
           <template #header>مبلغ دلخواه</template>
-          <Input :value="custom" inputmode="numeric" placeholder="مثلاً ۷۵۰۰۰۰" :status="customError ? 'error' : 'default'" @input="custom = ($event.target as HTMLInputElement).value">
+          <Input :value="custom" inputmode="numeric" placeholder="مثلاً ۷۵۰۰۰۰" :status="customError ? 'error' : 'default'" @input="custom = faDigits(asciiDigits(($event.target as HTMLInputElement).value).replace(/\D/g, ''))">
             <template #after><span class="hint">تومان</span></template>
           </Input>
           <template #footer><span :class="{ bad: !!customError }">{{ customError || `حداقل ${toman(MIN)}` }}</span></template>

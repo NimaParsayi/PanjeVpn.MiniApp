@@ -16,6 +16,7 @@ export const router = createRouter({
     { path: '/services/:id', component: () => import('@/views/ServiceView.vue'), meta: { parent: '/services' } },
     { path: '/services/:id/extend', component: () => import('@/views/ExtendView.vue'), meta: { parent: '/services' } },
     { path: '/wallet', component: () => import('@/views/WalletView.vue'), meta: { tab: true } },
+    { path: '/wallet/history', component: () => import('@/views/HistoryView.vue'), meta: { parent: '/wallet' } },
     { path: '/wallet/deposit/:method(ton|stars)', component: () => import('@/views/DepositView.vue'), meta: { parent: '/wallet' } },
     { path: '/gift', component: () => import('@/views/GiftView.vue'), meta: { parent: '/' } },
     { path: '/admin', component: () => import('@/views/AdminHubView.vue'), meta: { parent: '/' } },

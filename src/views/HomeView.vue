@@ -57,7 +57,7 @@ function nextPalette() {
           <Button size="s" mode="white" class="wbtn" @click="router.push('/wallet/deposit/ton')">
             <template #before><FIcon name="plus" :size="16" /></template>افزایش موجودی
           </Button>
-          <Button size="s" mode="plain" class="ghost" @click="router.push('/wallet')">جزئیات</Button>
+          <Button size="s" mode="plain" class="ghost" @click="router.push('/wallet/history')">تاریخچه</Button>
         </div>
       </div>
     </div>

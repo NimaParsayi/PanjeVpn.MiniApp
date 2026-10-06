@@ -78,6 +78,7 @@ export interface Api {
   getEmoji(id: string): Promise<ArrayBuffer | null>
   /** The bot's profile photo (BotFather /setuserpic), or null when none is set. */
   getLogo(): Promise<Blob | null>
+  getHistory(filter: 'all' | 'in' | 'out', page: number): Promise<HistoryPage>
   // Admin
   getAdminStats(): Promise<AdminStats>
   lookupUser(q: string): Promise<AdminUser>
@@ -111,5 +112,21 @@ export interface AdminService {
 }
 export interface AdminServicesPage { items: AdminService[]; total: number; page: number; pageSize: number }
 export interface AdminChargeInput { telegramId?: number; username?: string; amount: number }
+
+export type HistoryKind =
+  | 'deposit_ton' | 'deposit_stars' | 'admin_charge' | 'deposit'
+  | 'purchase' | 'extend' | 'gift_sent' | 'gift_received' | 'other'
+export interface HistoryEntry {
+  id: string
+  kind: HistoryKind
+  /** Signed: money in is positive, money out negative (Toman). */
+  amount: number
+  at: string
+  status: 'done' | 'pending'
+  subject: string | null
+  /** Rebuilt from older records, so the amount or time may not be exact. */
+  estimated: boolean
+}
+export interface HistoryPage { items: HistoryEntry[]; total: number; page: number; pageSize: number; totalIn: number; totalOut: number }
 
 export class ApiError extends Error {}

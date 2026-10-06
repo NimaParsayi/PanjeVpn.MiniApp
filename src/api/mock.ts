@@ -155,6 +155,28 @@ export const mockApi: Api = {
   getEmoji: async () => null, // no bot in demo mode → components fall back to vector icons
   getLogo: async () => null,
 
+  getHistory(filter, page) {
+    const at = (h: number) => new Date(Date.now() - h * 36e5).toISOString()
+    const all = [
+      { id: 'h1', kind: 'deposit_stars', amount: 400_000, at: at(0.2), status: 'pending', subject: null, estimated: false },
+      { id: 'h2', kind: 'extend', amount: -90_000, at: at(5), status: 'done', subject: `${me.telegramId}-aB3xK`, estimated: false },
+      { id: 'h3', kind: 'deposit_ton', amount: 1_000_000, at: at(7), status: 'done', subject: null, estimated: false },
+      { id: 'h4', kind: 'gift_sent', amount: -50_000, at: at(30), status: 'done', subject: null, estimated: false },
+      { id: 'h5', kind: 'purchase', amount: -67_500, at: at(52), status: 'done', subject: `${me.telegramId}-laptop`, estimated: false },
+      { id: 'h6', kind: 'admin_charge', amount: 100_000, at: at(76), status: 'done', subject: null, estimated: false },
+      { id: 'h7', kind: 'gift_received', amount: 45_000, at: at(100), status: 'done', subject: null, estimated: true },
+      { id: 'h8', kind: 'purchase', amount: -120_000, at: at(300), status: 'done', subject: `${me.telegramId}-family`, estimated: true },
+      { id: 'h9', kind: 'deposit_stars', amount: 200_000, at: at(320), status: 'done', subject: null, estimated: false },
+    ] as import('./types').HistoryEntry[]
+    const shown = all.filter((e) => filter === 'all' || (filter === 'in' ? e.amount > 0 : e.amount < 0))
+    const done = all.filter((e) => e.status === 'done')
+    return wait({
+      items: shown.slice((page - 1) * 30, page * 30), total: shown.length, page, pageSize: 30,
+      totalIn: done.filter((e) => e.amount > 0).reduce((a, e) => a + e.amount, 0),
+      totalOut: -done.filter((e) => e.amount < 0).reduce((a, e) => a + e.amount, 0),
+    })
+  },
+
   getAdminStats: () => wait({
     users: 1280, usersLast7Days: 64, services: 912, servicesLast7Days: 41, walletTotal: 38_450_000,
     depositsTotal: 412_000_000, depositsLast30Days: 96_500_000, giftsUnused: 7, giftsUnusedAmount: 1_450_000,

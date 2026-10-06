@@ -11,7 +11,7 @@ import { E } from '@/emoji/ids'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
 import { confetti } from '@/utils/confetti'
-import { asciiDigits, fa, toman } from '@/utils/format'
+import { asciiDigits, compactToman, fa, faDigits, toman } from '@/utils/format'
 import { haptic } from '@/telegram/webapp'
 
 const router = useRouter()
@@ -75,9 +75,9 @@ async function charge() {
 
         <Section>
           <template #header>مبلغ شارژ (تومان)</template>
-          <Input :value="amountText" inputmode="numeric" placeholder="مثلاً ۵۰۰۰۰۰" @input="amountText = ($event.target as HTMLInputElement).value" />
+          <Input :value="amountText" inputmode="numeric" placeholder="مثلاً ۵۰۰۰۰۰" @input="amountText = faDigits(asciiDigits(($event.target as HTMLInputElement).value).replace(/\D/g, ''))" />
           <div class="quick">
-            <Button v-for="q in quick" :key="q" mode="gray" size="s" @click="amountText = String(q); haptic.select()"><span class="num">{{ fa(q / 1000) }} هزار</span></Button>
+            <Button v-for="q in quick" :key="q" mode="gray" size="s" @click="amountText = faDigits(String(q)); haptic.select()"><span class="num">{{ compactToman(q) }}</span></Button>
           </div>
           <template #footer><span v-if="amount" class="num">{{ toman(amount) }}</span><span v-else>مبلغ رو بنویس.</span></template>
         </Section>

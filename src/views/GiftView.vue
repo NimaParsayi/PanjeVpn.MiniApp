@@ -11,7 +11,7 @@ import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
 import { confetti } from '@/utils/confetti'
 import { haptic, shareLink } from '@/telegram/webapp'
-import { fa, toman } from '@/utils/format'
+import { compactToman, fa, toman } from '@/utils/format'
 
 const app = useApp()
 const ui = useUi()
@@ -63,7 +63,7 @@ async function create() {
           <span class="muted num" :class="{ bad: !enough }">موجودی شما: {{ toman(app.me!.wallet) }}</span>
           <div class="quick">
             <Button v-for="q in quick" :key="q" mode="gray" size="s" @click="raw = String(q); haptic.select()">
-              <span class="num">{{ q >= 1_000_000 ? `${fa(q / 1_000_000)} میلیون` : `${fa(q / 1000)} هزار` }}</span>
+              <span class="num">{{ compactToman(q) }}</span>
             </Button>
           </div>
         </div>

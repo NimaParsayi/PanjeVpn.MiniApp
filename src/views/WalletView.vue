@@ -30,6 +30,15 @@ const balance = useCountUp(computed(() => app.me!.wallet))
 
     <List>
       <Section>
+        <Cell @click="router.push('/wallet/history')">
+          <template #before><ToneIcon icon="clock" tone="primary" :emoji="E.receipt" /></template>
+          تاریخچه تراکنش‌ها
+          <template #subtitle>شارژها، خریدها و هدیه‌ها</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
+      </Section>
+
+      <Section>
         <template #header>افزایش موجودی</template>
         <Cell @click="router.push('/wallet/deposit/ton')">
           <template #before><ToneIcon icon="ton" tone="primary" :emoji="E.ton" /></template>

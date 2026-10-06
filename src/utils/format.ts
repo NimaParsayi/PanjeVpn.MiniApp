@@ -5,6 +5,28 @@ const df = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' })
 /** Persian/Arabic digits → ASCII, so numbers typed on a Persian keyboard parse. */
 export const asciiDigits = (s: string) => s.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
 
+/** ۱۲۳: Latin digits → Persian, for text the user is typing. */
+export const faDigits = (s: string) => s.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])
+
+const nfCompact = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 })
+/** Short Toman amounts for buttons: ۲۰۰ هزار, ۱ میلیون, ۱٫۵ میلیون (never "۱٬۰۰۰ هزار"). */
+export function compactToman(n: number): string {
+  if (n >= 1_000_000) return `${nfCompact.format(n / 1_000_000)} میلیون`
+  if (n >= 1_000) return `${nfCompact.format(n / 1_000)} هزار`
+  return nfCompact.format(n)
+}
+
+const tf = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit', hour12: false })
+export const timeOfDay = (iso: string) => tf.format(new Date(iso))
+
+/** "امروز", "دیروز", else the Persian date. */
+export function dayLabel(iso: string, now = new Date()): string {
+  const d = new Date(iso)
+  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+  const diff = Math.round((startOf(now) - startOf(d)) / 864e5)
+  return diff === 0 ? 'امروز' : diff === 1 ? 'دیروز' : df.format(d)
+}
+
 export const fa = (n: number) => nf.format(n)
 export const faDecimal = (n: number) => nf1.format(n)
 export const toman = (n: number) => `${nf.format(Math.round(n))} تومان`
