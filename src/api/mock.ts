@@ -63,6 +63,7 @@ const services: UserService[] = [
   },
 ]
 
+const claimedTrials = new Set<string>()
 const deposits = new Map<string, { amount: number; checks: number; done: boolean; stars?: boolean }>()
 
 const find = (id: string) => {
@@ -82,7 +83,21 @@ const charge = (amount: number) => {
 
 export const mockApi: Api = {
   getMe: () => wait({ ...me }, 250),
-  getPlans: () => wait(plans.filter((p) => p.resellersOnly === me.isReseller)),
+  getPlans: () => wait(plans.filter((p) => p.resellersOnly === me.isReseller).map((p) => ({
+    ...p, trial: { status: claimedTrials.has(p.id) ? 'claimed' : 'available', gb: 1, days: 2 },
+  } as Plan))),
+  async claimTrial(planId) {
+    const p = planOf(planId)
+    if (claimedTrials.has(p.id)) throw new ApiError('برای این پلن قبلاً سرویس تست گرفتی؛ هر پلن فقط یک‌بار تست داره.')
+    claimedTrials.add(p.id)
+    const s: UserService = {
+      id: `s${rid()}`, name: `${me.telegramId}-test-${rid()}`, planId: p.id, planName: p.name, icon: p.icon, tone: p.tone,
+      usedGb: 0, totalGb: 1, expireAt: daysAhead(2), lastOnlineAt: null,
+      subscriptionUrl: `https://sub.panjevpn.example/sub/${rid()}${rid()}`, priceAtTime: 0, createdAt: new Date().toISOString(),
+    }
+    services.unshift(s)
+    return wait({ ...s }, 800)
+  },
   getServices: () => wait([...services].sort((a, b) => b.createdAt.localeCompare(a.createdAt))),
   getService: (id) => wait({ ...find(id) }, 300),
 

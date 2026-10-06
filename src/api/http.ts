@@ -33,6 +33,7 @@ export function createHttpApi(base: string): Api {
     getServices: () => call('GET', '/services'),
     getService: (id) => call('GET', `/services/${id}`),
     createService: (i) => call('POST', '/services', i),
+    claimTrial: (planId) => call('POST', `/plans/${planId}/trial`),
     extendService: ({ serviceId, ...rest }) => call('POST', `/services/${serviceId}/extend`, rest),
     startTonDeposit: (priceToman) => call('POST', '/deposits/ton', { priceToman }),
     checkDeposit: async (id) => (await call<{ paid: boolean }>('POST', `/deposits/${id}/check`)).paid,

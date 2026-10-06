@@ -30,7 +30,7 @@ const usage = computed(() => (unlimited.value ? `${faDecimal(props.service.usedG
   <Cell multiline @click="router.push(`/services/${service.id}`)">
     <template #before><ToneIcon :icon="service.icon" :tone="service.tone" :size="44" :emoji="service.emojiId" /></template>
     <span class="name">{{ service.name }}</span>
-    <template #subtitle>{{ service.planName }}</template>
+    <template #subtitle>{{ service.planName }} <Tag v-if="service.priceAtTime === 0" tone="info">تست</Tag></template>
     <template #description>
       <span v-if="service.unavailable" class="off">اطلاعات مصرف از سرور دریافت نشد؛ کمی بعد دوباره امتحان کن.</span>
       <span v-else class="usage">

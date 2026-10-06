@@ -30,11 +30,12 @@ export const useApp = defineStore('app', () => {
   }
 
   const refreshMe = async () => { me.value = await api.getMe() }
+  const refreshPlans = async () => { plans.value = await api.getPlans() }
   async function refreshServices() {
     servicesLoading.value = true
     try { services.value = await api.getServices() } finally { servicesLoading.value = false }
   }
   const planById = (id: string) => plans.value.find((p) => p.id === id)
 
-  return { me, plans, services, servicesLoading, loaded, loadError, boot, refreshMe, refreshServices, planById }
+  return { me, plans, services, servicesLoading, loaded, loadError, boot, refreshMe, refreshPlans, refreshServices, planById }
 })

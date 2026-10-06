@@ -25,7 +25,10 @@ export interface Plan {
   resellersOnly: boolean
   /** Telegram custom-emoji id stored on the plan (the same icon the bot shows). */
   emojiId?: string | null
+  /** Free trial for this plan: one per plan, only for people who never bought it. */
+  trial?: PlanTrial | null
 }
+export interface PlanTrial { status: 'available' | 'claimed' | 'purchased'; gb: number; days: number }
 
 export interface UserService {
   id: string
@@ -68,6 +71,7 @@ export interface Api {
   getService(id: string): Promise<UserService>
   createService(input: CreateServiceInput): Promise<UserService>
   extendService(input: ExtendServiceInput): Promise<UserService>
+  claimTrial(planId: string): Promise<UserService>
   startTonDeposit(priceToman: number): Promise<TonDeposit>
   /** True once the deposit has been credited to the wallet (TON: checks the chain; Stars: waits for the bot webhook). */
   checkDeposit(transactionId: string): Promise<boolean>
@@ -115,7 +119,7 @@ export interface AdminChargeInput { telegramId?: number; username?: string; amou
 
 export type HistoryKind =
   | 'deposit_ton' | 'deposit_stars' | 'admin_charge' | 'deposit'
-  | 'purchase' | 'extend' | 'gift_sent' | 'gift_received' | 'other'
+  | 'purchase' | 'extend' | 'gift_sent' | 'gift_received' | 'trial' | 'other'
 export interface HistoryEntry {
   id: string
   kind: HistoryKind

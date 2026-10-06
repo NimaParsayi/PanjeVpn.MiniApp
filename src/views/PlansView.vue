@@ -32,6 +32,7 @@ const router = useRouter()
               {{ p.description }}
               <span class="chips">
                 <Tag tone="neutral">{{ fa(p.days[0]) }} تا {{ fa(p.days[p.days.length - 1]) }} روز</Tag>
+                <Tag v-if="p.trial?.status === 'available'" tone="success" dot>تست رایگان</Tag>
                 <Tag :tone="isUnlimited(p) ? 'success' : 'neutral'">{{ isUnlimited(p) ? 'حجم نامحدود' : `از ${fa(p.minSize)} گیگ` }}</Tag>
               </span>
             </template>

@@ -29,12 +29,32 @@ const size = ref(plan.value?.minSize ?? 0)
 const daysIndex = ref(0)
 const confirming = ref(false)
 const busy = ref(false)
+const trialConfirm = ref(false)
+const trial = computed(() => plan.value?.trial ?? null)
 
 const nameError = computed(() => (/^[A-Za-z0-9_]{3,24}$/.test(name.value) ? '' : 'نام باید ۳ تا ۲۴ کاراکتر و فقط شامل حروف انگلیسی، عدد و _ باشد'))
 const price = computed(() => (plan.value ? totalPrice(plan.value, size.value, daysIndex.value) : 0))
 const balance = computed(() => app.me?.wallet ?? 0)
 const enough = computed(() => balance.value >= price.value)
 const prefix = computed(() => (app.me?.isReseller ? app.me.resellerTitle : app.me?.telegramId))
+
+async function takeTrial() {
+  if (!plan.value) return
+  busy.value = true
+  try {
+    const s = await api.claimTrial(plan.value.id)
+    await Promise.all([app.refreshServices(), app.refreshPlans()])
+    trialConfirm.value = false
+    confetti()
+    router.replace({ path: `/services/${s.id}`, query: { created: '1', trial: '1' } })
+  } catch (e) {
+    ui.toast(e instanceof ApiError ? e.message : 'خطایی ناشناخته رخ داد', 'error')
+    await app.refreshPlans().catch(() => {})
+    trialConfirm.value = false
+  } finally {
+    busy.value = false
+  }
+}
 
 async function buy() {
   if (!plan.value) return
@@ -57,6 +77,14 @@ async function buy() {
   <div v-if="plan" class="screen">
     <PageTitle :title="plan.name" subtitle="سفارش سرویس جدید" back />
     <List>
+      <Banner v-if="trial?.status === 'available'" type="section">
+        <template #before><TgEmoji :id="E.gift" fallback="gift" :size="36" /></template>
+        <template #header>سرویس تست رایگان</template>
+        <template #subheader>{{ fa(trial.gb) }} گیگابایت برای {{ fa(trial.days) }} روز، فقط یک‌بار برای این پلن. چیزی از کیف پولت کم نمی‌شه.</template>
+        <Button size="s" @click="trialConfirm = true">دریافت تست رایگان</Button>
+      </Banner>
+      <p v-else-if="trial?.status === 'claimed'" class="trial-note">تست رایگان این پلن رو قبلاً گرفتی.</p>
+
       <Section>
         <template #header>نام کانفیگ</template>
         <Input :value="name" class="ltr" placeholder="مثلاً phone" :maxlength="24" :status="nameError ? 'error' : 'default'" @input="name = ($event.target as HTMLInputElement).value" />
@@ -90,6 +118,15 @@ async function buy() {
       <Button stretched size="l" :disabled="!enough || !!nameError" @click="confirming = true">تایید و خرید · {{ toman(price) }}</Button>
     </div>
 
+    <Modal v-model:open="trialConfirm">
+      <template #header><ModalHeader>دریافت سرویس تست</ModalHeader></template>
+      <div v-if="trial" class="sheet">
+        <Cell><template #before><ToneIcon :icon="plan.icon" :tone="plan.tone" :size="44" :emoji="plan.emojiId" /></template>{{ plan.name }}<template #subtitle>{{ fa(trial.gb) }} گیگابایت · {{ fa(trial.days) }} روز · رایگان</template></Cell>
+        <Cell multiline><template #description>برای هر پلن فقط یک‌بار می‌تونی تست بگیری. بعد از ساخت، قابل تکرار نیست.</template>مطمئنی؟</Cell>
+        <div class="pad cta"><Button stretched size="l" :loading="busy" @click="takeTrial">تایید و دریافت تست</Button></div>
+      </div>
+    </Modal>
+
     <Modal v-model:open="confirming">
       <template #header><ModalHeader>تایید خرید</ModalHeader></template>
       <div class="sheet">
@@ -104,6 +141,7 @@ async function buy() {
 </template>
 
 <style scoped>
+.trial-note { margin: 0 4px var(--block-gap); font-size: 12px; line-height: 1.7; color: var(--tgui-hint-color); text-align: center; }
 .total { color: var(--tgui-link-color); }
 .err { color: var(--tgui-destructive-text-color); }
 .sheet { padding-bottom: calc(var(--safe-bottom) + 12px); }

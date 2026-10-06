@@ -22,6 +22,7 @@ const ui = useUi()
 const s = ref<UserService | null>(null)
 const showQr = ref(route.query.created === '1')
 const justCreated = route.query.created === '1'
+const justTrial = route.query.trial === '1'
 
 onMounted(async () => {
   try { s.value = await api.getService(String(route.params.id)) } catch (e) { ui.toast((e as Error).message, 'error') }
@@ -42,19 +43,19 @@ async function copyConfig() {
 
 <template>
   <div class="screen">
-    <PageTitle :title="justCreated ? 'سرویس ساخته شد' : 'مشخصات سرویس'" back />
+    <PageTitle :title="justTrial ? 'سرویس تست ساخته شد' : justCreated ? 'سرویس ساخته شد' : 'مشخصات سرویس'" back />
     <List v-if="s">
       <Banner v-if="justCreated" type="section">
         <template #before><TgEmoji :id="E.rocket" fallback="checkCircle" :size="32" /></template>
-        <template #header>کانفیگ شما ساخته شد!</template>
-        <template #subheader>لطفاً تحت هیچ شرایطی کانفیگ رو تو پیام‌رسان‌های داخلی یا پیامک ارسال نکن تا همه متصل بمونیم.</template>
+        <template #header>{{ justTrial ? 'سرویس تست شما ساخته شد!' : 'کانفیگ شما ساخته شد!' }}</template>
+        <template #subheader>{{ justTrial ? 'برای ادامه‌ی اتصال بعد از تموم‌شدن تست، همین‌جا تمدیدش کن یا سرویس کامل بخر. ' : '' }}لطفاً تحت هیچ شرایطی کانفیگ رو تو پیام‌رسان‌های داخلی یا پیامک ارسال نکن تا همه متصل بمونیم.</template>
       </Banner>
 
       <Section>
         <Cell>
           <template #before><ToneIcon :icon="s.icon" :tone="s.tone" :size="48" :emoji="s.emojiId" /></template>
           <span class="ltr name">{{ s.name }}</span>
-          <template #subtitle>{{ s.planName }}</template>
+          <template #subtitle>{{ s.planName }} <Tag v-if="s.priceAtTime === 0" tone="info">تست</Tag></template>
           <template #after><Tag :tone="s.unavailable ? 'neutral' : expired ? 'danger' : 'success'" :dot="!s.unavailable">{{ s.unavailable ? 'نامشخص' : expired ? 'منقضی' : 'فعال' }}</Tag></template>
         </Cell>
       </Section>

@@ -35,6 +35,7 @@ const META: Record<HistoryKind, { title: string; emoji: string; icon: string; to
   extend: { title: 'تمدید سرویس', emoji: E.extend, icon: 'refresh', tone: 'primary' },
   gift_sent: { title: 'ارسال پنجه‌گیفت', emoji: E.gift, icon: 'gift', tone: 'danger' },
   gift_received: { title: 'دریافت پنجه‌گیفت', emoji: E.gift, icon: 'gift', tone: 'success' },
+  trial: { title: 'دریافت سرویس تست', emoji: E.rocket, icon: 'sparkle', tone: 'success' },
   other: { title: 'تراکنش', emoji: E.coin, icon: 'coin', tone: 'neutral' },
 }
 
@@ -120,7 +121,8 @@ onMounted(() => { load(true); void app.refreshMe().catch(() => {}) })
               </template>
               <template #after>
                 <span class="amt">
-                  <b class="sum num" :class="e.status === 'pending' ? 'wait' : e.amount > 0 ? 'in' : 'out'">{{ e.amount > 0 ? '+' : '−' }}{{ fa(Math.abs(e.amount)) }}</b>
+                  <Tag v-if="e.amount === 0" tone="success">رایگان</Tag>
+                  <b v-else class="sum num" :class="e.status === 'pending' ? 'wait' : e.amount > 0 ? 'in' : 'out'">{{ e.amount > 0 ? '+' : '−' }}{{ fa(Math.abs(e.amount)) }}</b>
                   <span class="time num">{{ timeOfDay(e.at) }}</span>
                 </span>
               </template>

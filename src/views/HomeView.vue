@@ -21,6 +21,8 @@ const ui = useUi()
 const router = useRouter()
 const me = computed(() => app.me!)
 const recent = computed(() => app.services.slice(0, 3))
+// Plans the user can still try for free.
+const trialCount = computed(() => app.plans.filter((p) => p.trial?.status === 'available').length)
 const balance = useCountUp(computed(() => me.value.wallet))
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -60,6 +62,17 @@ function nextPalette() {
           <Button size="s" mode="plain" class="ghost" @click="router.push('/wallet/history')">تاریخچه</Button>
         </div>
       </div>
+    </div>
+
+    <div v-if="trialCount" class="pad promo-wrap">
+      <button class="promo glass-card" type="button" @click="router.push('/buy')">
+        <TgEmoji :id="E.rocket" fallback="sparkle" :size="40" />
+        <span class="promo-text">
+          <b>سرویس تست رایگان</b>
+          <small>برای {{ fa(trialCount) }} پلن می‌تونی ۱ گیگ و ۲ روز تست بگیری</small>
+        </span>
+        <FIcon name="chevronEnd" :size="18" class="promo-chev" />
+      </button>
     </div>
 
     <div v-if="me.isAdmin" class="pad admin-wrap">
@@ -125,6 +138,12 @@ function nextPalette() {
 .more { color: var(--tgui-link-color); cursor: pointer; }
 .hero-wrap { margin-bottom: 12px; }
 .admin-wrap { margin-bottom: 12px; }
+.promo-wrap { margin-bottom: 12px; }
+.promo { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; cursor: pointer; font: inherit; text-align: start; color: var(--tgui-text-color); }
+.promo-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.promo-text b { font-size: 15px; font-weight: 600; }
+.promo-text small { font-size: 12px; line-height: 1.6; color: var(--tgui-hint-color); }
+.promo-chev { color: var(--tgui-hint-color); }
 .admin-cta { justify-content: flex-start; gap: 10px; }
 .hero {
   position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-card); padding: 20px;
