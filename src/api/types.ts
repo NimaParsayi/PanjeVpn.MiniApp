@@ -140,7 +140,7 @@ export interface AdminPlanInput {
   description: string // Telegram HTML allowed
   emojiId: string | null
   color: PlanColor
-  inboundId: number // Pasarguard group id / Sanaei inbound id
+  inboundIds: number[] // Pasarguard group ids / Sanaei inbound ids (one or more)
   panel: PanelKind
   pricePerGb: number
   days: number[]

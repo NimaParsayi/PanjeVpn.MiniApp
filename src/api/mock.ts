@@ -109,8 +109,8 @@ const adminSettings: AdminSetting[] = [
 ]
 
 const adminPlans: AdminPlan[] = [
-  { id: 'ap1', name: 'اقتصادی', description: 'مناسب وب‌گردی و شبکه‌های اجتماعی', emojiId: null, color: 'Primary', inboundId: 1, panel: 'pasarguard', pricePerGb: 10_000, days: [7, 14, 30, 60, 90], dayMultiplier: 1.5, minSize: 5, maxSize: 100, sizeMultiplication: 2, resellersOnly: false, warning: null },
-  { id: 'ap2', name: 'نامحدود', description: 'بدون محدودیت حجم', emojiId: null, color: 'Success', inboundId: 0, panel: 'sanaei', pricePerGb: 250_000, days: [30, 60], dayMultiplier: 1.8, minSize: 0, maxSize: -1, sizeMultiplication: -1, resellersOnly: false, warning: 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' },
+  { id: 'ap1', name: 'اقتصادی', description: 'مناسب وب‌گردی و شبکه‌های اجتماعی', emojiId: null, color: 'Primary', inboundIds: [1, 3], panel: 'pasarguard', pricePerGb: 10_000, days: [7, 14, 30, 60, 90], dayMultiplier: 1.5, minSize: 5, maxSize: 100, sizeMultiplication: 2, resellersOnly: false, warning: null },
+  { id: 'ap2', name: 'نامحدود', description: 'بدون محدودیت حجم', emojiId: null, color: 'Success', inboundIds: [], panel: 'sanaei', pricePerGb: 250_000, days: [30, 60], dayMultiplier: 1.8, minSize: 0, maxSize: -1, sizeMultiplication: -1, resellersOnly: false, warning: 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' },
 ]
 
 export const mockApi: Api = {
@@ -284,7 +284,7 @@ export const mockApi: Api = {
   getAdminPlans: () => wait(adminPlans.map((p) => ({ ...p }))),
   async saveAdminPlan(id, input) {
     if (!input.name.trim()) throw new ApiError('نام باید بین ۱ تا ۴۰ کاراکتر باشه.')
-    const saved = { ...input, id: id ?? `p${Date.now()}`, warning: input.inboundId > 0 ? null : 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' }
+    const saved = { ...input, id: id ?? `p${Date.now()}`, warning: input.inboundIds.length > 0 ? null : 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' }
     const i = adminPlans.findIndex((p) => p.id === saved.id)
     if (i >= 0) adminPlans[i] = saved; else adminPlans.push(saved)
     return wait({ ...saved }, 500)

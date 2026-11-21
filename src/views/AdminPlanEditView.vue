@@ -25,7 +25,7 @@ const description = ref('')
 const emojiId = ref('')
 const color = ref<PlanColor>('Primary')
 const panel = ref<PanelKind>('pasarguard')
-const inboundId = ref('0')
+const inboundIds = ref('')
 const price = ref('10000')
 const days = ref('7,14,30,60,90')
 const dayMultiplier = ref('1.5')
@@ -48,7 +48,7 @@ onMounted(async () => {
     const p = (await api.getAdminPlans()).find((x) => x.id === id.value)
     if (!p) { ui.toast('این پلن پیدا نشد.', 'error'); router.replace('/admin/plans'); return }
     name.value = p.name; description.value = p.description; emojiId.value = p.emojiId ?? ''
-    color.value = p.color; panel.value = p.panel; inboundId.value = String(p.inboundId)
+    color.value = p.color; panel.value = p.panel; inboundIds.value = p.inboundIds.join(',')
     price.value = String(p.pricePerGb); days.value = p.days.join(','); dayMultiplier.value = String(p.dayMultiplier)
     minSize.value = String(p.minSize); maxSize.value = String(p.maxSize); sizeMultiplication.value = String(p.sizeMultiplication)
     resellersOnly.value = p.resellersOnly; warning.value = p.warning
@@ -61,7 +61,7 @@ onMounted(async () => {
 function build(): AdminPlanInput {
   return {
     name: name.value.trim(), description: description.value.trim(), emojiId: ascii(emojiId.value) || null,
-    color: color.value, inboundId: num(inboundId.value), panel: panel.value, pricePerGb: num(price.value),
+    color: color.value, inboundIds: ascii(inboundIds.value).split(/[,\s]+/).filter(Boolean).map(Number), panel: panel.value, pricePerGb: num(price.value),
     days: ascii(days.value).split(/[,\s]+/).filter(Boolean).map(Number),
     dayMultiplier: num(dayMultiplier.value), minSize: num(minSize.value), maxSize: num(maxSize.value),
     sizeMultiplication: num(sizeMultiplication.value), resellersOnly: resellersOnly.value,
@@ -70,7 +70,7 @@ function build(): AdminPlanInput {
 
 async function save() {
   const input = build()
-  const numbers = [input.inboundId, input.pricePerGb, input.dayMultiplier, input.minSize, input.maxSize, input.sizeMultiplication, ...input.days]
+  const numbers = [...input.inboundIds, input.pricePerGb, input.dayMultiplier, input.minSize, input.maxSize, input.sizeMultiplication, ...input.days]
   if (numbers.some((n) => Number.isNaN(n))) { ui.toast('مقدارهای عددی رو با اعداد درست وارد کن.', 'error'); return }
   busy.value = true
   try {
@@ -127,8 +127,8 @@ const colors: { v: PlanColor; label: string }[] = [
           <Button size="s" :mode="panel === 'pasarguard' ? 'filled' : 'gray'" @click="panel = 'pasarguard'; haptic.select()">پاسارگارد</Button>
           <Button size="s" :mode="panel === 'sanaei' ? 'filled' : 'gray'" @click="panel = 'sanaei'; haptic.select()">سنایی</Button>
         </div>
-        <Field label="شناسه گروه / اینباند"><Input :value="inboundId" class="ltr" inputmode="numeric" placeholder="مثلاً 1" @input="inboundId = ($event.target as HTMLInputElement).value" /></Field>
-        <template #footer>پاسارگارد: شماره‌ی group · سنایی: شماره‌ی inbound.</template>
+        <Field label="شناسه گروه / اینباند (یک یا چند تا، با ویرگول)"><Input :value="inboundIds" class="ltr" placeholder="مثلاً 1,3" @input="inboundIds = ($event.target as HTMLInputElement).value" /></Field>
+        <template #footer>پاسارگارد: شماره‌ی group ها (مثلاً 1,3) · سنایی: شماره‌ی inbound ها. سرویس روی همه‌ی اینا ساخته می‌شه.</template>
       </Section>
 
       <Section>
