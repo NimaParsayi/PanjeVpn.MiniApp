@@ -15,7 +15,7 @@ export interface Me {
   /** Card-to-card payments (TonPays) are set up by the operator. */
   cardPayments: boolean
   /** A card payment that was started but isn't settled yet (shown app-wide with a quick "I've paid" button). */
-  pendingDeposit?: { transactionId: string; priceToman: number; createdAt: string } | null
+  pendingDeposit?: { transactionId: string; priceToman: number; createdAt: string; expiresAt: string } | null
 }
 
 export interface Plan {

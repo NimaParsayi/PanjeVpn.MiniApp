@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from 'telegram-ui-vue'
 import FIcon from './FIcon.vue'
@@ -19,10 +19,14 @@ const ui = useUi()
 const route = useRoute()
 const router = useRouter()
 const busy = ref(false)
+const now = ref(Date.now())
+const tick = setInterval(() => (now.value = Date.now()), 15000)
+onBeforeUnmount(() => clearInterval(tick))
 
 const pending = computed(() => app.me?.pendingDeposit ?? null)
 // The deposit screen has its own, richer controls for the same payment.
-const visible = computed(() => !!pending.value && !route.path.startsWith('/wallet/deposit'))
+// Payments expire: hide it as soon as its time is up, even before the server is asked again.
+const visible = computed(() => !!pending.value && new Date(pending.value.expiresAt).getTime() > now.value && !route.path.startsWith('/wallet/deposit'))
 
 async function check() {
   if (!pending.value) return

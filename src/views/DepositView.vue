@@ -103,7 +103,12 @@ async function checkCard(silent = false) {
     const r = await api.checkDeposit(card.value.transactionId)
     cardNote.value = r.note
     if (r.paid) await finish()
-    else if (r.status === 'failed') { clearInterval(poll); ui.toast(r.note ?? 'پرداخت انجام نشد', 'error', 4000) }
+    else if (r.status === 'failed') {
+      clearInterval(poll)
+      ui.toast(r.note ?? 'پرداخت انجام نشد', 'error', 4000)
+      await app.refreshMe()
+      card.value = null; cardNote.value = null; step.value = 'amount' // expired / rejected: start over
+    }
     else if (!silent) ui.toast(r.note ?? 'هنوز پرداختت ثبت نشده!', 'warning', 3500)
   } catch (e) {
     if (!silent) ui.toast(e instanceof ApiError ? e.message : 'خطایی ناشناخته رخ داد', 'error')
@@ -194,7 +199,7 @@ async function payStars() {
       <Banner type="section">
         <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
         <template #header>دقیقاً این مبلغ رو واریز کن</template>
-        <template #subheader><b class="num">{{ toman(card.payToman) }}</b> — از صفحه‌ی پرداخت، شماره کارت مقصد رو می‌بینی. بعد از تأیید، کیف پولت خودکار شارژ می‌شه.</template>
+        <template #subheader><b class="num">{{ toman(card.payToman) }}</b> — از صفحه‌ی پرداخت، شماره کارت مقصد رو می‌بینی. بعد از تأیید، کیف پولت خودکار شارژ می‌شه. این پرداخت تا ۳۰ دقیقه معتبره و بعدش خودکار لغو می‌شه.</template>
       </Banner>
       <div class="pad pay-btns">
         <Button stretched size="l" @click="openLink(card.payUrl)"><template #before><FIcon name="link" :size="20" /></template>رفتن به صفحه پرداخت</Button>

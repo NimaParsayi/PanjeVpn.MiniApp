@@ -19,7 +19,7 @@ const me: Me = {
   brandName: 'پنجه',
   brandEmojiId: '5280639613004685879',
   cardPayments: true,
-  pendingDeposit: new URLSearchParams(location.search).has('pending') ? { transactionId: 'cdemo', priceToman: 500_000, createdAt: new Date().toISOString() } : null,
+  pendingDeposit: new URLSearchParams(location.search).has('pending') ? { transactionId: 'cdemo', priceToman: 500_000, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30 * 6e4).toISOString() } : null,
 }
 
 const plans: Plan[] = [
