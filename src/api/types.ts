@@ -88,7 +88,50 @@ export interface Api {
   lookupUser(q: string): Promise<AdminUser>
   adminCharge(input: AdminChargeInput): Promise<AdminUser>
   getAdminServices(page: number, q: string): Promise<AdminServicesPage>
+  getAdminPlans(): Promise<AdminPlan[]>
+  saveAdminPlan(id: string | null, input: AdminPlanInput): Promise<AdminPlan>
+  deleteAdminPlan(id: string): Promise<void>
+  getBackups(): Promise<Backups>
+  createBackup(): Promise<Backups>
+  /** Sends the file to the admin's own Telegram chat. */
+  sendBackup(name: string): Promise<{ sent: boolean; reason: string | null }>
+  getAdminSettings(): Promise<AdminSetting[]>
+  /** An empty value clears the setting. */
+  setAdminSetting(key: string, value: string): Promise<void>
 }
+
+export interface BackupFile { name: string; size: number; createdAt: string; kind: 'auto' | 'manual' | 'pre-restore' }
+export interface Backups { items: BackupFile[]; intervalHours: number; keep: number; sendToTelegram: boolean }
+
+export interface AdminSetting {
+  key: string
+  title: string
+  group: string
+  secret: boolean
+  hint: string | null
+  isSet: boolean
+  /** Secrets are masked (••••1234); the real value never leaves the server. */
+  preview: string
+}
+
+export type PanelKind = 'pasarguard' | 'sanaei'
+export type PlanColor = 'Primary' | 'Success' | 'Danger'
+export interface AdminPlanInput {
+  name: string
+  description: string // Telegram HTML allowed
+  emojiId: string | null
+  color: PlanColor
+  inboundId: number // Pasarguard group id / Sanaei inbound id
+  panel: PanelKind
+  pricePerGb: number
+  days: number[]
+  dayMultiplier: number
+  minSize: number // 0 ⇒ unlimited plan
+  maxSize: number // -1 ⇒ no upper bound
+  sizeMultiplication: number // -1 ⇒ step by 1, otherwise ×N
+  resellersOnly: boolean
+}
+export interface AdminPlan extends AdminPlanInput { id: string; warning: string | null }
 
 export interface AdminStats {
   users: number

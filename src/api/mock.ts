@@ -1,4 +1,4 @@
-import type { Api, Gift, Me, Plan, UserService } from './types'
+import type { AdminPlan, AdminSetting, BackupFile, Api, Gift, Me, Plan, UserService } from './types'
 import { ApiError } from './types'
 import { totalPrice } from '@/utils/pricing'
 import { tgUser } from '@/telegram/webapp'
@@ -80,6 +80,28 @@ const charge = (amount: number) => {
   if (me.wallet < amount) throw new ApiError('موجودی حسابت کافی نیست، لطفاً اول کیف پولتو شارژ کن.')
   me.wallet -= amount
 }
+
+const backups: BackupFile[] = [
+  { name: 'panje-20260701-030000-auto.json.gz', size: 412_000, createdAt: hoursAgo(5), kind: 'auto' },
+  { name: 'panje-20260630-030000-auto.json.gz', size: 405_000, createdAt: hoursAgo(29), kind: 'auto' },
+  { name: 'panje-20260629-101500-manual.json.gz', size: 398_000, createdAt: hoursAgo(60), kind: 'manual' },
+]
+
+const adminSettings: AdminSetting[] = [
+  { key: 'pasarguard.url', title: 'آدرس API پنل پاسارگارد', group: 'پاسارگارد', secret: false, hint: 'مثال: https://panel.example.com/api/', isSet: true, preview: 'https://panel.example.com/api/' },
+  { key: 'pasarguard.username', title: 'نام کاربری پاسارگارد', group: 'پاسارگارد', secret: false, hint: null, isSet: true, preview: 'admin' },
+  { key: 'pasarguard.password', title: 'رمز پاسارگارد', group: 'پاسارگارد', secret: true, hint: null, isSet: true, preview: '••••2233' },
+  { key: 'sanaei.url', title: 'آدرس API پنل سنایی', group: 'سنایی', secret: false, hint: 'مثال: http://1.2.3.4:2053/PATH/panel/api/', isSet: false, preview: '' },
+  { key: 'sanaei.token', title: 'توکن API سنایی', group: 'سنایی', secret: true, hint: null, isSet: false, preview: '' },
+  { key: 'ton.wallet', title: 'آدرس کیف پول TON', group: 'TON', secret: false, hint: null, isSet: true, preview: 'EQAeo-MyoVjI5XCQJwojG4oiY89ByzLT7iaovCrWqSPOivez' },
+  { key: 'support.username', title: 'آیدی پشتیبانی', group: 'عمومی', secret: false, hint: 'بدون @، مثال: MySupport', isSet: true, preview: 'FiaSupport' },
+  { key: 'trial.gb', title: 'حجم سرویس تست (گیگ)', group: 'عمومی', secret: false, hint: 'یه عدد، مثلاً 1', isSet: true, preview: '1' },
+]
+
+const adminPlans: AdminPlan[] = [
+  { id: 'ap1', name: 'اقتصادی', description: 'مناسب وب‌گردی و شبکه‌های اجتماعی', emojiId: null, color: 'Primary', inboundId: 1, panel: 'pasarguard', pricePerGb: 10_000, days: [7, 14, 30, 60, 90], dayMultiplier: 1.5, minSize: 5, maxSize: 100, sizeMultiplication: 2, resellersOnly: false, warning: null },
+  { id: 'ap2', name: 'نامحدود', description: 'بدون محدودیت حجم', emojiId: null, color: 'Success', inboundId: 0, panel: 'sanaei', pricePerGb: 250_000, days: [30, 60], dayMultiplier: 1.8, minSize: 0, maxSize: -1, sizeMultiplication: -1, resellersOnly: false, warning: 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' },
+]
 
 export const mockApi: Api = {
   getMe: () => wait({ ...me }, 250),
@@ -212,6 +234,34 @@ export const mockApi: Api = {
       ownerUsername: i % 2 ? `user_${i % 9}` : null, priceAtTime: 90_000 + i * 1_500, createdAt: hoursAgo(i * 9),
     })).filter((s) => !q.trim() || `${s.name} ${s.ownerUsername ?? ''} ${s.ownerTelegramId}`.toLowerCase().includes(q.trim().replace(/^@/, '').toLowerCase()))
     return wait({ items: all.slice((page - 1) * 20, page * 20), total: all.length, page, pageSize: 20 })
+  },
+
+  getBackups: () => wait({ items: [...backups], intervalHours: 24, keep: 14, sendToTelegram: true }),
+  async createBackup() {
+    backups.unshift({ name: `panje-${Date.now()}-manual.json.gz`, size: 420_000, createdAt: new Date().toISOString(), kind: 'manual' })
+    return wait({ items: [...backups], intervalHours: 24, keep: 14, sendToTelegram: true }, 900)
+  },
+  sendBackup: async () => wait({ sent: true, reason: null }, 600),
+  getAdminSettings: () => wait(adminSettings.map((x) => ({ ...x }))),
+  async setAdminSetting(key, value) {
+    const s = adminSettings.find((x) => x.key === key)
+    if (!s) throw new ApiError('تنظیم ناشناخته است.')
+    s.isSet = !!value.trim()
+    s.preview = !value.trim() ? '' : s.secret ? `••••${value.trim().slice(-4)}` : value.trim()
+    return wait(undefined, 400)
+  },
+  getAdminPlans: () => wait(adminPlans.map((p) => ({ ...p }))),
+  async saveAdminPlan(id, input) {
+    if (!input.name.trim()) throw new ApiError('نام باید بین ۱ تا ۴۰ کاراکتر باشه.')
+    const saved = { ...input, id: id ?? `p${Date.now()}`, warning: input.inboundId > 0 ? null : 'شناسه گروه/اینباند هنوز تنظیم نشده؛ تا اون موقع خرید این پلن خطا می‌ده.' }
+    const i = adminPlans.findIndex((p) => p.id === saved.id)
+    if (i >= 0) adminPlans[i] = saved; else adminPlans.push(saved)
+    return wait({ ...saved }, 500)
+  },
+  async deleteAdminPlan(id) {
+    const i = adminPlans.findIndex((p) => p.id === id)
+    if (i >= 0) adminPlans.splice(i, 1)
+    return wait(undefined, 400)
   },
 
   sendBulkMessage: async () => wait({ total: 1280, success: 1243, failed: 37 }, 1800),

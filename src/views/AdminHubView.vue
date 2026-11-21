@@ -36,6 +36,24 @@ if (!app.me?.isAdmin) router.replace('/')
           <template #subtitle>همه‌ی سرویس‌های ساخته‌شده، با جست‌وجو</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>
+        <Cell @click="router.push('/admin/plans')">
+          <template #before><ToneIcon icon="cart" tone="success" :emoji="E.services" /></template>
+          مدیریت پلن‌ها
+          <template #subtitle>ساخت و ویرایش پلن‌ها، قیمت و نوع پنل</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
+        <Cell @click="router.push('/admin/settings')">
+          <template #before><ToneIcon icon="lock" tone="primary" :emoji="E.receipt" /></template>
+          تنظیمات ربات
+          <template #subtitle>پنل‌ها، کیف پول TON، پشتیبانی و سرویس تست</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
+        <Cell @click="router.push('/admin/backups')">
+          <template #before><ToneIcon icon="shield" tone="success" :emoji="E.receipt" /></template>
+          بک‌اپ
+          <template #subtitle>بک‌اپ خودکار و دستی از همه‌ی اطلاعات</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
         <Cell @click="router.push('/admin/broadcast')">
           <template #before><ToneIcon icon="megaphone" tone="danger" :emoji="E.broadcast" /></template>
           پیام همگانی
