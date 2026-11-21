@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TgEmoji from '@/components/TgEmoji.vue'
 import { E } from '@/emoji/ids'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Banner, Button, Cell, List, Section } from 'telegram-ui-vue'
 import PageTitle from '@/components/PageTitle.vue'
@@ -13,6 +13,8 @@ import { fa, toman } from '@/utils/format'
 import { useCountUp } from '@/utils/useCountUp'
 
 const app = useApp()
+// Pick up settings the admin changed since the app was opened (e.g. card payments just got enabled).
+onMounted(() => { void app.refreshMe().catch(() => {}) })
 const router = useRouter()
 const balance = useCountUp(computed(() => app.me!.wallet))
 </script>
