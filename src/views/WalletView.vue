@@ -40,6 +40,12 @@ const balance = useCountUp(computed(() => app.me!.wallet))
 
       <Section>
         <template #header>افزایش موجودی</template>
+        <Cell v-if="app.me?.cardPayments" @click="router.push('/wallet/deposit/card')">
+          <template #before><ToneIcon icon="coin" tone="primary" :emoji="E.coin" /></template>
+          کارت به کارت
+          <template #subtitle>پرداخت ریالی با تایید خودکار</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
         <Cell @click="router.push('/wallet/deposit/ton')">
           <template #before><ToneIcon icon="ton" tone="primary" :emoji="E.ton" /></template>
           رمزارز TON

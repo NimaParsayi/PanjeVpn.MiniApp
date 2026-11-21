@@ -9,11 +9,11 @@ import PageTitle from '@/components/PageTitle.vue'
 import FIcon from '@/components/FIcon.vue'
 import ToneIcon from '@/components/ToneIcon.vue'
 import CopyCell from '@/components/CopyCell.vue'
-import { api, ApiError, type StarsDeposit, type TonDeposit } from '@/api'
+import { api, ApiError, type CardDeposit, type StarsDeposit, type TonDeposit } from '@/api'
 import { useApp } from '@/stores/app'
 import { useUi } from '@/stores/ui'
 import { confetti } from '@/utils/confetti'
-import { haptic, openInvoice } from '@/telegram/webapp'
+import { haptic, openInvoice, openLink } from '@/telegram/webapp'
 import { asciiDigits, compactToman, countdown, fa, faDigits, toman } from '@/utils/format'
 
 const MIN = 200_000
@@ -23,7 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const app = useApp()
 const ui = useUi()
-const method = computed(() => route.params.method as 'ton' | 'stars')
+const method = computed(() => route.params.method as 'ton' | 'stars' | 'card')
 
 type Step = 'amount' | 'pay' | 'done'
 const step = ref<Step>('amount')
@@ -34,9 +34,12 @@ const checking = ref(false)
 
 const ton = ref<TonDeposit | null>(null)
 const stars = ref<StarsDeposit | null>(null)
+const card = ref<CardDeposit | null>(null)
+const cardNote = ref<string | null>(null)
 const now = ref(Date.now())
 let timer: ReturnType<typeof setInterval> | undefined
-onBeforeUnmount(() => clearInterval(timer))
+let poll: ReturnType<typeof setInterval> | undefined
+onBeforeUnmount(() => { clearInterval(timer); clearInterval(poll) })
 
 const left = computed(() => (ton.value ? new Date(ton.value.expiresAt).getTime() - now.value : 0))
 const expired = computed(() => !!ton.value && left.value <= 0)
@@ -55,6 +58,9 @@ async function start() {
       ton.value = await api.startTonDeposit(finalAmount.value)
       now.value = Date.now()
       timer = setInterval(() => (now.value = Date.now()), 1000)
+    } else if (method.value === 'card') {
+      card.value = await api.startCardDeposit(finalAmount.value)
+      startPolling()
     } else {
       stars.value = await api.startStarsDeposit(finalAmount.value)
     }
@@ -66,6 +72,7 @@ async function start() {
 
 async function finish() {
   clearInterval(timer)
+  clearInterval(poll)
   await app.refreshMe()
   step.value = 'done'
   haptic.success()
@@ -76,10 +83,30 @@ async function checkTon() {
   if (!ton.value) return
   checking.value = true
   try {
-    if (await api.checkDeposit(ton.value.transactionId)) await finish()
+    if ((await api.checkDeposit(ton.value.transactionId)).paid) await finish()
     else ui.toast('هنوز پرداختت ثبت نشده!', 'warning')
   } catch (e) {
     ui.toast(e instanceof ApiError ? e.message : 'خطایی ناشناخته رخ داد', 'error')
+  } finally { checking.value = false }
+}
+
+// Card payments are confirmed by the gateway a while after the user pays, so keep asking every few seconds.
+function startPolling() {
+  clearInterval(poll)
+  poll = setInterval(() => void checkCard(true), 6000)
+}
+
+async function checkCard(silent = false) {
+  if (!card.value || checking.value) return
+  checking.value = !silent
+  try {
+    const r = await api.checkDeposit(card.value.transactionId)
+    cardNote.value = r.note
+    if (r.paid) await finish()
+    else if (r.status === 'failed') { clearInterval(poll); ui.toast(r.note ?? 'پرداخت انجام نشد', 'error', 4000) }
+    else if (!silent) ui.toast(r.note ?? 'هنوز پرداختت ثبت نشده!', 'warning', 3500)
+  } catch (e) {
+    if (!silent) ui.toast(e instanceof ApiError ? e.message : 'خطایی ناشناخته رخ داد', 'error')
   } finally { checking.value = false }
 }
 
@@ -91,7 +118,7 @@ async function payStars() {
     checking.value = true
     try {
       for (let i = 0; i < 12; i++) {
-        if (await api.checkDeposit(stars.value.transactionId)) return await finish()
+        if ((await api.checkDeposit(stars.value.transactionId)).paid) return await finish()
         await new Promise((r) => setTimeout(r, 1000))
       }
       ui.toast('پرداختت ثبت شد؛ چند لحظه‌ی دیگه موجودی بروز می‌شه.', 'info', 4000)
@@ -106,7 +133,7 @@ async function payStars() {
 
 <template>
   <div class="screen">
-    <PageTitle :title="method === 'ton' ? 'شارژ با TON' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back />
+    <PageTitle :title="method === 'ton' ? 'شارژ با TON' : method === 'card' ? 'شارژ کارت به کارت' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back />
 
     <template v-if="step === 'amount'">
       <List>
@@ -156,6 +183,26 @@ async function payStars() {
       </div>
     </List>
 
+    <List v-else-if="step === 'pay' && method === 'card' && card">
+      <Section>
+        <Cell>
+          <template #before><ToneIcon icon="coin" tone="primary" :emoji="E.coin" /></template>
+          شارژ کیف پول
+          <template #subtitle><span class="num">{{ toman(card.priceToman) }}</span></template>
+        </Cell>
+      </Section>
+      <Banner type="section">
+        <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
+        <template #header>دقیقاً این مبلغ رو واریز کن</template>
+        <template #subheader><b class="num">{{ toman(card.payToman) }}</b> — از صفحه‌ی پرداخت، شماره کارت مقصد رو می‌بینی. بعد از تأیید، کیف پولت خودکار شارژ می‌شه.</template>
+      </Banner>
+      <div class="pad pay-btns">
+        <Button stretched size="l" @click="openLink(card.payUrl)"><template #before><FIcon name="link" :size="20" /></template>رفتن به صفحه پرداخت</Button>
+        <Button stretched size="l" mode="bezeled" :loading="checking" @click="checkCard()"><template #before><FIcon name="checkCircle" :size="20" /></template>پرداخت کردم</Button>
+      </div>
+      <Section v-if="cardNote"><Cell multiline>{{ cardNote }}</Cell></Section>
+    </List>
+
     <List v-else-if="step === 'pay' && stars">
       <Placeholder>
         <template #header><span class="num">{{ fa(stars.priceStars) }}</span> Stars</template>
@@ -185,6 +232,7 @@ async function payStars() {
 .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 16px 12px; }
 .hint { color: var(--tgui-hint-color); padding-inline-end: 12px; font-size: 13px; }
 .bad { color: var(--tgui-destructive-text-color); }
+.pay-btns { display: flex; flex-direction: column; gap: 8px; }
 .done-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 240px; }
 small { opacity: .75; }
 </style>

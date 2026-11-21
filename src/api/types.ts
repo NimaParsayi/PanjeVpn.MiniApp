@@ -12,6 +12,8 @@ export interface Me {
   brandName: string
   /** Telegram custom-emoji id shown as the product's icon. */
   brandEmojiId: string
+  /** Card-to-card payments (TonPays) are set up by the operator. */
+  cardPayments: boolean
 }
 
 export interface Plan {
@@ -64,6 +66,8 @@ export interface TonDeposit {
   memo: string
   expiresAt: string
 }
+export interface CardDeposit { transactionId: string; priceToman: number; payToman: number; payUrl: string; telegramUrl: string | null }
+export interface DepositCheck { paid: boolean; status: 'paid' | 'pending' | 'processing' | 'action' | 'failed'; note: string | null }
 export interface StarsDeposit { transactionId: string; invoiceLink: string; priceToman: number; priceStars: number }
 export interface Gift { id: string; amount: number; link: string }
 export interface BulkResult { total: number; success: number; failed: number }
@@ -78,7 +82,8 @@ export interface Api {
   claimTrial(planId: string): Promise<UserService>
   startTonDeposit(priceToman: number): Promise<TonDeposit>
   /** True once the deposit has been credited to the wallet (TON: checks the chain; Stars: waits for the bot webhook). */
-  checkDeposit(transactionId: string): Promise<boolean>
+  checkDeposit(transactionId: string): Promise<DepositCheck>
+  startCardDeposit(priceToman: number): Promise<CardDeposit>
   startStarsDeposit(priceToman: number): Promise<StarsDeposit>
   createGift(amount: number): Promise<Gift>
   sendBulkMessage(text: string): Promise<BulkResult>
@@ -167,7 +172,7 @@ export interface AdminServicesPage { items: AdminService[]; total: number; page:
 export interface AdminChargeInput { telegramId?: number; username?: string; amount: number }
 
 export type HistoryKind =
-  | 'deposit_ton' | 'deposit_stars' | 'admin_charge' | 'deposit'
+  | 'deposit_ton' | 'deposit_stars' | 'deposit_card' | 'admin_charge' | 'deposit'
   | 'purchase' | 'extend' | 'gift_sent' | 'gift_received' | 'trial' | 'other'
 export interface HistoryEntry {
   id: string

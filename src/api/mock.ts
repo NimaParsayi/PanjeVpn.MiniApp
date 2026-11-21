@@ -18,6 +18,7 @@ const me: Me = {
   resellerTitle: 'Nima',
   brandName: 'پنجه',
   brandEmojiId: '5280639613004685879',
+  cardPayments: true,
 }
 
 const plans: Plan[] = [
@@ -66,7 +67,7 @@ const services: UserService[] = [
 ]
 
 const claimedTrials = new Set<string>()
-const deposits = new Map<string, { amount: number; checks: number; done: boolean; stars?: boolean }>()
+const deposits = new Map<string, { amount: number; checks: number; done: boolean; stars?: boolean; card?: boolean }>()
 
 const find = (id: string) => {
   const s = services.find((x) => x.id === id)
@@ -168,9 +169,15 @@ export const mockApi: Api = {
     if (!d) throw new ApiError('تراکنش پیدا نشد')
     d.checks++
     await wait(null, 1100)
-    if (d.checks < 2 && !d.stars) return false // demo: a TON payment "arrives" on the 2nd check
+    if (d.checks < 2 && !d.stars) return { paid: false, status: d.card ? 'processing' : 'pending', note: d.card ? 'پرداختت ثبت شد و در حال تأییده؛ چند لحظه بعد دوباره چک کن.' : null } // demo: arrives on the 2nd check
     if (!d.done) { d.done = true; me.wallet += d.amount }
-    return true
+    return { paid: true, status: 'paid', note: null }
+  },
+
+  async startCardDeposit(priceToman) {
+    const id = `c${rid()}`
+    deposits.set(id, { amount: priceToman, checks: 0, done: false, card: true })
+    return wait({ transactionId: id, priceToman, payToman: priceToman + 37, payUrl: 'https://pay.tonpays.online/i/demo', telegramUrl: 'https://t.me/TonPaysInvoiceBot?start=inv_demo' })
   },
 
   async startStarsDeposit(priceToman) {

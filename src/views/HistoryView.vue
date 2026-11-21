@@ -29,6 +29,7 @@ const loaded = ref(false)
 const META = computed((): Record<HistoryKind, { title: string; emoji: string; icon: string; tone: 'success' | 'primary' | 'danger' | 'neutral' }> => ({
   deposit_ton: { title: 'شارژ با TON', emoji: E.ton, icon: 'ton', tone: 'primary' },
   deposit_stars: { title: 'شارژ با استارز', emoji: E.stars, icon: 'star', tone: 'success' },
+  deposit_card: { title: 'شارژ کارت‌به‌کارت', emoji: E.coin, icon: 'coin', tone: 'primary' },
   admin_charge: { title: 'شارژ توسط پشتیبانی', emoji: E.walletTopUp, icon: 'wallet', tone: 'success' },
   deposit: { title: 'شارژ کیف پول', emoji: E.coin, icon: 'coin', tone: 'success' },
   purchase: { title: 'خرید سرویس', emoji: E.buy, icon: 'cart', tone: 'primary' },
