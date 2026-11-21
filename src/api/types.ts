@@ -86,6 +86,8 @@ export interface Api {
   // Admin
   getAdminStats(): Promise<AdminStats>
   lookupUser(q: string): Promise<AdminUser>
+  /** Live search: partial @username or the start of a Telegram id. */
+  searchUsers(q: string): Promise<AdminUser[]>
   adminCharge(input: AdminChargeInput): Promise<AdminUser>
   getAdminServices(page: number, q: string): Promise<AdminServicesPage>
   getAdminPlans(): Promise<AdminPlan[]>

@@ -223,6 +223,11 @@ export const mockApi: Api = {
     if (!key || key === 'nobody') throw new ApiError('کاربری با این مشخصات پیدا نشد (باید قبلاً ربات رو استارت کرده باشه).')
     return wait({ telegramId: /^\d+$/.test(key) ? Number(key) : 555000111, username: /^\d+$/.test(key) ? null : key, wallet: 120_000, services: 2 })
   },
+  async searchUsers(q) {
+    const key = q.trim().replace(/^@/, '').toLowerCase()
+    const all = Array.from({ length: 12 }, (_, i) => ({ telegramId: 555000000 + i * 37, username: i % 3 ? `user_${i}` : null, wallet: 50_000 * i, services: i % 4 }))
+    return wait(key ? all.filter((u) => String(u.telegramId).startsWith(key) || (u.username ?? '').includes(key)).slice(0, 8) : [], 250)
+  },
   async adminCharge({ telegramId, username, amount }) {
     if (amount <= 0) throw new ApiError('مبلغ باید بیشتر از صفر باشه.')
     return wait({ telegramId: telegramId ?? 555000111, username: username ?? null, wallet: 120_000 + amount, services: 2 }, 700)

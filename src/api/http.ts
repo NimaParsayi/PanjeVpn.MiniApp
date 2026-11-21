@@ -51,6 +51,7 @@ export function createHttpApi(base: string): Api {
     getHistory: (filter, page) => call('GET', `/history?filter=${filter}&page=${page}`),
     getAdminStats: () => call('GET', '/admin/stats'),
     lookupUser: (q) => call('GET', `/admin/users/lookup?q=${encodeURIComponent(q)}`),
+    searchUsers: (q) => call('GET', `/admin/users/search?q=${encodeURIComponent(q)}`),
     adminCharge: (input) => call('POST', '/admin/charge', input),
     getAdminServices: (page, q) => call('GET', `/admin/services?page=${page}&q=${encodeURIComponent(q)}`),
     getBackups: () => call('GET', '/admin/backups'),
