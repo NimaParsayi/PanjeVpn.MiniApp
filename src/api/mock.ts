@@ -1,4 +1,4 @@
-import type { AdminPlan, AdminSetting, BackupFile, Api, Gift, Me, Plan, UserService } from './types'
+import type { AdminInfo, AdminPlan, AdminSetting, BackupFile, Api, Gift, Me, Plan, UserService } from './types'
 import { ApiError } from './types'
 import { totalPrice } from '@/utils/pricing'
 import { tgUser } from '@/telegram/webapp'
@@ -85,6 +85,11 @@ const charge = (amount: number) => {
   if (me.wallet < amount) throw new ApiError('موجودی حسابت کافی نیست، لطفاً اول کیف پولتو شارژ کن.')
   me.wallet -= amount
 }
+
+const admins: AdminInfo[] = [
+  { telegramId: 123456789, username: 'owner', isOwner: true, isMe: true },
+  { telegramId: 555000074, username: 'user_2', isOwner: false, isMe: false },
+]
 
 const backups: BackupFile[] = [
   { name: 'panje-20260701-030000-auto.json.gz', size: 412_000, createdAt: hoursAgo(5), kind: 'auto' },
@@ -252,6 +257,16 @@ export const mockApi: Api = {
     return wait({ items: all.slice((page - 1) * 20, page * 20), total: all.length, page, pageSize: 20 })
   },
 
+  getAdmins: () => wait(admins.map((a) => ({ ...a }))),
+  async addAdmin(telegramId) {
+    if (!admins.some((a) => a.telegramId === telegramId)) admins.push({ telegramId, username: telegramId % 2 ? `user_${telegramId % 100}` : null, isOwner: false, isMe: false })
+    return wait(admins.map((a) => ({ ...a })), 400)
+  },
+  async removeAdmin(telegramId) {
+    const i = admins.findIndex((a) => a.telegramId === telegramId)
+    if (i >= 0 && !admins[i].isOwner && !admins[i].isMe) admins.splice(i, 1)
+    return wait(admins.map((a) => ({ ...a })), 400)
+  },
   getBackups: () => wait({ items: [...backups], intervalHours: 24, keep: 14, sendToTelegram: true }),
   async createBackup() {
     backups.unshift({ name: `panje-${Date.now()}-manual.json.gz`, size: 420_000, createdAt: new Date().toISOString(), kind: 'manual' })

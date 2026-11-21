@@ -104,6 +104,9 @@ export interface Api {
   getAdminPlans(): Promise<AdminPlan[]>
   saveAdminPlan(id: string | null, input: AdminPlanInput): Promise<AdminPlan>
   deleteAdminPlan(id: string): Promise<void>
+  getAdmins(): Promise<AdminInfo[]>
+  addAdmin(telegramId: number): Promise<AdminInfo[]>
+  removeAdmin(telegramId: number): Promise<AdminInfo[]>
   getBackups(): Promise<Backups>
   createBackup(): Promise<Backups>
   /** Sends the file to the admin's own Telegram chat. */
@@ -112,6 +115,9 @@ export interface Api {
   /** An empty value clears the setting. */
   setAdminSetting(key: string, value: string): Promise<void>
 }
+
+/** Owners are defined in the server config: always admins, can't be removed from the app. */
+export interface AdminInfo { telegramId: number; username: string | null; isOwner: boolean; isMe: boolean }
 
 export interface BackupFile { name: string; size: number; createdAt: string; kind: 'auto' | 'manual' | 'pre-restore' }
 export interface Backups { items: BackupFile[]; intervalHours: number; keep: number; sendToTelegram: boolean }

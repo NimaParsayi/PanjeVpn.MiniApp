@@ -6,7 +6,10 @@
     <meta name="color-scheme" content="light dark" />
     <title>پنجه VPN</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Telegram's official WebApp SDK, served from our own domain on purpose: loading it from telegram.org blocks the whole
+         page, and on networks where telegram.org is slow or filtered the Mini App hung on the loading screen.
+         The file is unmodified. To update it:  curl -o public/telegram-web-app.js https://telegram.org/js/telegram-web-app.js -->
+    <script src="/telegram-web-app.js"></script>
   </head>
   <body>
     <div id="app"></div>

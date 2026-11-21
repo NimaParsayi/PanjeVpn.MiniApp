@@ -48,6 +48,12 @@ if (!app.me?.isAdmin) router.replace('/')
           <template #subtitle>پنل‌ها، کیف پول TON، پشتیبانی و سرویس تست</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>
+        <Cell @click="router.push('/admin/admins')">
+          <template #before><ToneIcon icon="user" tone="primary" :emoji="E.receipt" /></template>
+          مدیریت ادمین‌ها
+          <template #subtitle>افزودن و حذف ادمین</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
         <Cell @click="router.push('/admin/backups')">
           <template #before><ToneIcon icon="shield" tone="success" :emoji="E.receipt" /></template>
           بک‌اپ
