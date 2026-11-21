@@ -58,7 +58,7 @@ const balance = useCountUp(computed(() => app.me!.wallet))
       <Section>
         <Cell @click="router.push('/gift')">
           <template #before><ToneIcon icon="gift" tone="danger" :emoji="E.gift" /></template>
-          پنجه‌گیفت
+          {{ app.gift }}
           <template #subtitle>از موجودیت برای دوستات هدیه بساز</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>

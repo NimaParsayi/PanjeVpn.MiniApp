@@ -30,7 +30,7 @@ onMounted(() => { void app.refreshServices().catch(() => {}) })
       </Section>
       <Section v-else-if="app.servicesLoading"><Skeleton visible><div style="height: 96px" /></Skeleton></Section>
       <Placeholder v-else>
-        <TgEmoji :id="E.panda" fallback="shieldCheck" :size="120" loop />
+        <TgEmoji :id="app.brandEmoji" fallback="shieldCheck" :size="120" loop />
         <template #header>هنوز سرویسی نداری</template>
         <template #description>با خرید اولین سرویس، اینجا لیستشون رو می‌بینی.</template>
         <template #action><Button size="m" @click="router.push('/buy')"><template #before><FIcon name="cart" :size="18" /></template>خرید سرویس</Button></template>

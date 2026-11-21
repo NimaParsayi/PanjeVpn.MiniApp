@@ -48,7 +48,7 @@ onBeforeUnmount(() => clearTimeout(timer))
 
 <template>
   <div class="screen">
-    <PageTitle title="سرویس‌های پنجه" :subtitle="total ? `${fa(total)} سرویس` : undefined" back />
+    <PageTitle :title="`سرویس‌های ${app.brand}`" :subtitle="total ? `${fa(total)} سرویس` : undefined" back />
     <List>
       <Section>
         <Input :value="q" class="ltr" placeholder="جست‌وجو: نام سرویس، شناسه یا @یوزرنیم" @input="q = ($event.target as HTMLInputElement).value" />
@@ -71,7 +71,7 @@ onBeforeUnmount(() => clearTimeout(timer))
       </Section>
       <Section v-else-if="loading"><Skeleton visible><div style="height: 200px" /></Skeleton></Section>
       <Placeholder v-else>
-        <TgEmoji :id="E.panda" fallback="shieldCheck" :size="110" loop />
+        <TgEmoji :id="app.brandEmoji" fallback="shieldCheck" :size="110" loop />
         <template #header>سرویسی پیدا نشد</template>
         <template #description>عبارت دیگه‌ای رو جست‌وجو کن.</template>
       </Placeholder>

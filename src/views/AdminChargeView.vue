@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Banner, Button, Cell, Divider, Input, List, Modal, ModalHeader, Section } from 'telegram-ui-vue'
 import PageTitle from '@/components/PageTitle.vue'
+import Field from '@/components/Field.vue'
 import FIcon from '@/components/FIcon.vue'
 import Tag from '@/components/Tag.vue'
 import TgEmoji from '@/components/TgEmoji.vue'
@@ -126,7 +127,7 @@ async function charge() {
 
         <Section>
           <template #header>مبلغ شارژ (تومان)</template>
-          <Input :value="amountText" inputmode="numeric" placeholder="مثلاً ۵۰۰۰۰۰" @input="amountText = faDigits(asciiDigits(($event.target as HTMLInputElement).value).replace(/\D/g, ''))" />
+          <Field label="مبلغ (تومان)"><Input :value="amountText" inputmode="numeric" placeholder="مثلاً ۵۰۰۰۰۰" @input="amountText = faDigits(asciiDigits(($event.target as HTMLInputElement).value).replace(/\D/g, ''))" /></Field>
           <div class="quick">
             <Button v-for="q in quick" :key="q" mode="gray" size="s" @click="amountText = faDigits(String(q)); haptic.select()"><span class="num">{{ compactToman(q) }}</span></Button>
           </div>

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Banner, Button, Cell, Input, List, Modal, ModalHeader, Section } from 'telegram-ui-vue'
 import PageTitle from '@/components/PageTitle.vue'
+import Field from '@/components/Field.vue'
 import FIcon from '@/components/FIcon.vue'
 import { api, ApiError, type AdminPlanInput, type PanelKind, type PlanColor } from '@/api'
 import { useApp } from '@/stores/app'
@@ -111,9 +112,9 @@ const colors: { v: PlanColor; label: string }[] = [
 
       <Section>
         <template #header>نمایش</template>
-        <Input :value="name" placeholder="نام پلن" @input="name = ($event.target as HTMLInputElement).value" />
-        <Input :value="description" placeholder="توضیحات (HTML تلگرام مجازه)" @input="description = ($event.target as HTMLInputElement).value" />
-        <Input :value="emojiId" class="ltr" inputmode="numeric" placeholder="آیدی ایموجی پرمیوم (اختیاری)" @input="emojiId = ($event.target as HTMLInputElement).value" />
+        <Field label="نام پلن"><Input :value="name" placeholder="مثلاً اقتصادی" @input="name = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="توضیحات (HTML تلگرام مجازه)"><Input :value="description" placeholder="مثلاً مناسب وب‌گردی" @input="description = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="آیدی ایموجی پرمیوم (اختیاری)"><Input :value="emojiId" class="ltr" inputmode="numeric" placeholder="خالی = پیش‌فرض" @input="emojiId = ($event.target as HTMLInputElement).value" /></Field>
         <div class="seg">
           <Button v-for="c in colors" :key="c.v" size="s" :mode="color === c.v ? 'filled' : 'gray'" @click="color = c.v; haptic.select()">{{ c.label }}</Button>
         </div>
@@ -126,23 +127,23 @@ const colors: { v: PlanColor; label: string }[] = [
           <Button size="s" :mode="panel === 'pasarguard' ? 'filled' : 'gray'" @click="panel = 'pasarguard'; haptic.select()">پاسارگارد</Button>
           <Button size="s" :mode="panel === 'sanaei' ? 'filled' : 'gray'" @click="panel = 'sanaei'; haptic.select()">سنایی</Button>
         </div>
-        <Input :value="inboundId" class="ltr" inputmode="numeric" placeholder="شناسه گروه / اینباند" @input="inboundId = ($event.target as HTMLInputElement).value" />
+        <Field label="شناسه گروه / اینباند"><Input :value="inboundId" class="ltr" inputmode="numeric" placeholder="مثلاً 1" @input="inboundId = ($event.target as HTMLInputElement).value" /></Field>
         <template #footer>پاسارگارد: شماره‌ی group · سنایی: شماره‌ی inbound.</template>
       </Section>
 
       <Section>
         <template #header>قیمت و مدت</template>
-        <Input :value="price" inputmode="numeric" placeholder="قیمت هر گیگ (تومان)" @input="price = ($event.target as HTMLInputElement).value" />
-        <Input :value="days" class="ltr" placeholder="گزینه‌های مدت (روز)، مثل 7,14,30" @input="days = ($event.target as HTMLInputElement).value" />
-        <Input :value="dayMultiplier" class="ltr" inputmode="decimal" placeholder="ضریب قیمت هر پله مدت" @input="dayMultiplier = ($event.target as HTMLInputElement).value" />
+        <Field label="قیمت هر گیگ (تومان)"><Input :value="price" inputmode="numeric" placeholder="مثلاً 10000" @input="price = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="گزینه‌های مدت (روز، با ویرگول)"><Input :value="days" class="ltr" placeholder="7,14,30" @input="days = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="ضریب قیمت هر پله مدت"><Input :value="dayMultiplier" class="ltr" inputmode="decimal" placeholder="1.5" @input="dayMultiplier = ($event.target as HTMLInputElement).value" /></Field>
         <template #footer>قیمت = قیمت هر گیگ × حجم × ضریب^پله‌ی مدت. برای پلن نامحدود، قیمت همون قیمت پلنه.</template>
       </Section>
 
       <Section>
         <template #header>حجم</template>
-        <Input :value="minSize" class="ltr" inputmode="numeric" placeholder="حداقل حجم (گیگ) — 0 یعنی نامحدود" @input="minSize = ($event.target as HTMLInputElement).value" />
-        <Input :value="maxSize" class="ltr" inputmode="numeric" placeholder="حداکثر حجم — -1 یعنی بدون سقف" @input="maxSize = ($event.target as HTMLInputElement).value" />
-        <Input :value="sizeMultiplication" class="ltr" inputmode="decimal" placeholder="ضریب پله حجم — -1 یعنی یکی‌یکی" @input="sizeMultiplication = ($event.target as HTMLInputElement).value" />
+        <Field label="حداقل حجم (گیگ) — 0 یعنی نامحدود"><Input :value="minSize" class="ltr" inputmode="numeric" placeholder="5" @input="minSize = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="حداکثر حجم (گیگ) — -1 یعنی بدون سقف"><Input :value="maxSize" class="ltr" inputmode="numeric" placeholder="100" @input="maxSize = ($event.target as HTMLInputElement).value" /></Field>
+        <Field label="ضریب پله حجم — -1 یعنی یکی‌یکی"><Input :value="sizeMultiplication" class="ltr" inputmode="decimal" placeholder="2" @input="sizeMultiplication = ($event.target as HTMLInputElement).value" /></Field>
       </Section>
 
       <Section>

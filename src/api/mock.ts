@@ -16,6 +16,8 @@ const me: Me = {
   isAdmin: new URLSearchParams(location.search).has('admin'),
   isReseller: new URLSearchParams(location.search).has('reseller'),
   resellerTitle: 'Nima',
+  brandName: 'پنجه',
+  brandEmojiId: '5280639613004685879',
 }
 
 const plans: Plan[] = [

@@ -32,7 +32,7 @@ function press(k: string) {
 }
 
 async function create() {
-  if (value.value === 0) return ui.toast('نمیشه که مبلغ پنجه‌گیفت صفر باشه!', 'error')
+  if (value.value === 0) return ui.toast(`نمیشه که مبلغ ${app.gift} صفر باشه!`, 'error')
   if (!enough.value) return ui.toast('موجودی کیف پولت کافی نیست :(', 'error')
   busy.value = true
   try {
@@ -48,7 +48,7 @@ async function create() {
 
 <template>
   <div class="screen">
-    <PageTitle title="پنجه‌گیفت" subtitle="شارژ هدیه برای دوستات" back />
+    <PageTitle :title="app.gift" subtitle="شارژ هدیه برای دوستات" back />
     <List>
       <Banner type="section">
         <template #before><TgEmoji :id="E.gift" fallback="gift" :size="32" /></template>
@@ -78,17 +78,17 @@ async function create() {
     </List>
 
     <div class="action-bar">
-      <Button stretched size="l" :disabled="!value || !enough" :loading="busy" @click="create"><template #before><FIcon name="gift" :size="20" /></template>ساخت پنجه‌گیفت</Button>
+      <Button stretched size="l" :disabled="!value || !enough" :loading="busy" @click="create"><template #before><FIcon name="gift" :size="20" /></template>ساخت {{ app.gift }}</Button>
     </div>
 
     <Modal v-model:open="open">
-      <template #header><ModalHeader>پنجه‌گیفت ساخته شد!</ModalHeader></template>
+      <template #header><ModalHeader>{{ app.gift }} ساخته شد!</ModalHeader></template>
       <div v-if="gift" class="sheet">
-        <Cell multiline>پنجه‌گیفت به مبلغ <b class="num">{{ toman(gift.amount) }}</b> آماده‌ست.
+        <Cell multiline>{{ app.gift }} به مبلغ <b class="num">{{ toman(gift.amount) }}</b> آماده‌ست.
           <template #description>کافیه لینک رو کپی کنی و برای شخص مدنظرت بفرستی؛ با کلیک روی لینک، کیف پولش شارژ می‌شه.</template>
         </Cell>
-        <CopyCell label="لینک پنجه‌گیفت" :value="gift.link" ltr />
-        <div class="pad cta"><Button stretched size="l" @click="shareLink(gift.link, 'یه پنجه‌گیفت برات دارم 🎁')"><template #before><FIcon name="send" :size="18" /></template>ارسال برای دوستم</Button></div>
+        <CopyCell :label="`لینک ${app.gift}`" :value="gift.link" ltr />
+        <div class="pad cta"><Button stretched size="l" @click="shareLink(gift.link, `یه ${app.gift} برات دارم 🎁`)"><template #before><FIcon name="send" :size="18" /></template>ارسال برای دوستم</Button></div>
       </div>
     </Modal>
   </div>

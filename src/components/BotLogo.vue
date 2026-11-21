@@ -2,9 +2,10 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import TgEmoji from './TgEmoji.vue'
 import { api } from '@/api'
-import { E } from '@/emoji/ids'
+import { useApp } from '@/stores/app'
 
 /** The bot's profile photo; until one is set in BotFather the bot's own panda emoji stands in as the logo. */
+const app = useApp()
 const props = withDefaults(defineProps<{ size?: number }>(), { size: 52 })
 
 let cached: Promise<string | null> | null = null
@@ -21,7 +22,7 @@ onBeforeUnmount(() => { /* kept for the session: the object URL is shared by eve
 <template>
   <span class="logo" :style="{ width: size + 'px', height: size + 'px' }">
     <img v-if="src" :src="src" alt="" />
-    <TgEmoji v-else :id="E.panda" fallback="shieldCheck" :size="Math.round(props.size * 0.78)" />
+    <TgEmoji v-else :id="app.brandEmoji" fallback="shieldCheck" :size="Math.round(props.size * 0.78)" />
   </span>
 </template>
 

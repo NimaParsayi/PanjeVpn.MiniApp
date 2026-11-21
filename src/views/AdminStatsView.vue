@@ -42,7 +42,7 @@ onMounted(load)
         <Cell><template #after><b class="num">{{ toman(stats.walletTotal) }}</b></template>مجموع موجودی کیف پول‌ها</Cell>
         <Cell><template #after><b class="num">{{ toman(stats.depositsTotal) }}</b></template>کل شارژهای ثبت‌شده</Cell>
         <Cell><template #after><b class="num">{{ toman(stats.depositsLast30Days) }}</b></template>شارژ ۳۰ روز اخیر</Cell>
-        <Cell><template #after><b class="num">{{ toman(stats.giftsUnusedAmount) }}</b></template>پنجه‌گیفت‌های استفاده‌نشده<template #subtitle>{{ fa(stats.giftsUnused) }} گیفت</template></Cell>
+        <Cell><template #after><b class="num">{{ toman(stats.giftsUnusedAmount) }}</b></template>{{ app.gift }}‌های استفاده‌نشده<template #subtitle>{{ fa(stats.giftsUnused) }} گیفت</template></Cell>
       </Section>
     </List>
     <List v-else><Section><Skeleton visible><div style="height: 260px" /></Skeleton></Section></List>

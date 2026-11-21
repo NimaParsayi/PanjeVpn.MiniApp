@@ -30,7 +30,7 @@ onMounted(() => app.boot())
 
     <div v-else-if="app.loadError" class="screen">
       <Placeholder>
-        <TgEmoji :id="E.panda" fallback="error" :size="120" />
+        <TgEmoji :id="app.brandEmoji" fallback="error" :size="120" />
         <template #header>اتصال برقرار نشد</template>
         <template #description>{{ app.loadError }}</template>
         <template #action><Button size="m" @click="app.boot()"><FIcon name="refresh" :size="18" /> تلاش دوباره</Button></template>

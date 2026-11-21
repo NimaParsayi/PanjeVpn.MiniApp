@@ -8,6 +8,10 @@ export interface Me {
   isAdmin: boolean
   isReseller: boolean
   resellerTitle?: string
+  /** Product name chosen by the operator (admin settings). */
+  brandName: string
+  /** Telegram custom-emoji id shown as the product's icon. */
+  brandEmojiId: string
 }
 
 export interface Plan {

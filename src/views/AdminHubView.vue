@@ -14,7 +14,7 @@ if (!app.me?.isAdmin) router.replace('/')
 
 <template>
   <div class="screen">
-    <PageTitle title="پنل ادمین" subtitle="مدیریت ربات پنجه" back />
+    <PageTitle title="پنل ادمین" :subtitle="`مدیریت ربات ${app.brand}`" back />
     <List>
       <Section>
         <template #header>امکانات</template>
@@ -32,7 +32,7 @@ if (!app.me?.isAdmin) router.replace('/')
         </Cell>
         <Cell @click="router.push('/admin/services')">
           <template #before><ToneIcon icon="shieldCheck" tone="primary" :emoji="E.receipt" /></template>
-          سرویس‌های پنجه
+          سرویس‌های {{ app.brand }}
           <template #subtitle>همه‌ی سرویس‌های ساخته‌شده، با جست‌وجو</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>

@@ -55,7 +55,7 @@ onMounted(async () => {
       </Section>
       <Section v-else-if="loading"><Skeleton visible><div style="height: 200px" /></Skeleton></Section>
       <Placeholder v-else>
-        <TgEmoji :id="E.panda" fallback="cart" :size="110" loop />
+        <TgEmoji :id="app.brandEmoji" fallback="cart" :size="110" loop />
         <template #header>هنوز پلنی نساختی</template>
         <template #description>با دکمه‌ی پایین اولین پلن رو بساز.</template>
       </Placeholder>

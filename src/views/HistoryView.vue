@@ -26,18 +26,18 @@ const page = ref(1)
 const loading = ref(false)
 const loaded = ref(false)
 
-const META: Record<HistoryKind, { title: string; emoji: string; icon: string; tone: 'success' | 'primary' | 'danger' | 'neutral' }> = {
+const META = computed((): Record<HistoryKind, { title: string; emoji: string; icon: string; tone: 'success' | 'primary' | 'danger' | 'neutral' }> => ({
   deposit_ton: { title: 'شارژ با TON', emoji: E.ton, icon: 'ton', tone: 'primary' },
   deposit_stars: { title: 'شارژ با استارز', emoji: E.stars, icon: 'star', tone: 'success' },
   admin_charge: { title: 'شارژ توسط پشتیبانی', emoji: E.walletTopUp, icon: 'wallet', tone: 'success' },
   deposit: { title: 'شارژ کیف پول', emoji: E.coin, icon: 'coin', tone: 'success' },
   purchase: { title: 'خرید سرویس', emoji: E.buy, icon: 'cart', tone: 'primary' },
   extend: { title: 'تمدید سرویس', emoji: E.extend, icon: 'refresh', tone: 'primary' },
-  gift_sent: { title: 'ارسال پنجه‌گیفت', emoji: E.gift, icon: 'gift', tone: 'danger' },
-  gift_received: { title: 'دریافت پنجه‌گیفت', emoji: E.gift, icon: 'gift', tone: 'success' },
+  gift_sent: { title: `ارسال ${app.gift}`, emoji: E.gift, icon: 'gift', tone: 'danger' },
+  gift_received: { title: `دریافت ${app.gift}`, emoji: E.gift, icon: 'gift', tone: 'success' },
   trial: { title: 'دریافت سرویس تست', emoji: E.rocket, icon: 'sparkle', tone: 'success' },
   other: { title: 'تراکنش', emoji: E.coin, icon: 'coin', tone: 'neutral' },
-}
+}))
 
 // Entries arrive newest first; group them under a day heading.
 const groups = computed(() => {
@@ -137,7 +137,7 @@ onMounted(() => { load(true); void app.refreshMe().catch(() => {}) })
 
       <Section v-else-if="!loaded"><Skeleton visible><div style="height: 220px" /></Skeleton></Section>
       <Placeholder v-else>
-        <TgEmoji :id="E.panda" fallback="wallet" :size="110" loop />
+        <TgEmoji :id="app.brandEmoji" fallback="wallet" :size="110" loop />
         <template #header>هنوز تراکنشی نداری</template>
         <template #description>بعد از اولین شارژ یا خرید، گردش کیف پولت اینجا نشون داده می‌شه.</template>
       </Placeholder>

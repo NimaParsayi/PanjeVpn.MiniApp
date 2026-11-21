@@ -42,7 +42,7 @@ function nextPalette() {
 
 <template>
   <div class="screen with-tabs">
-    <PageTitle :title="`${greeting}، ${me.displayName}`" subtitle="به پنجه خوش اومدی">
+    <PageTitle :title="`${greeting}، ${me.displayName}`" :subtitle="`به ${app.brand} خوش اومدی`">
       <template #lead><BotLogo :size="52" /></template>
       <button v-if="!isTelegram" class="glass-round" type="button" aria-label="تغییر پالت رنگی" @click="nextPalette"><FIcon name="sparkle" :size="20" /></button>
       <Avatar v-else :size="40" :src="tgUser?.photo_url" :acronym="me.displayName.slice(0, 1)" />
@@ -100,7 +100,7 @@ function nextPalette() {
         </Cell>
         <Cell @click="router.push('/gift')">
           <template #before><ToneIcon icon="gift" tone="danger" :emoji="E.gift" /></template>
-          پنجه‌گیفت
+          {{ app.gift }}
           <template #subtitle>شارژ هدیه برای دوستان</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>

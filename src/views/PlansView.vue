@@ -41,7 +41,7 @@ const router = useRouter()
         </template>
       </Section>
       <Placeholder v-else>
-        <TgEmoji :id="E.panda" fallback="cart" :size="120" loop />
+        <TgEmoji :id="app.brandEmoji" fallback="cart" :size="120" loop />
         <template #header>پلنی در دسترس نیست</template>
         <template #description>چند لحظه‌ی دیگه دوباره سر بزن.</template>
       </Placeholder>
