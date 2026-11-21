@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import { AppRoot, Button, Placeholder, Skeleton } from 'telegram-ui-vue'
 import AppTabbar from '@/components/AppTabbar.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import PendingBanner from '@/components/PendingBanner.vue'
 import FIcon from '@/components/FIcon.vue'
 import { useApp } from '@/stores/app'
 import { isDark } from '@/telegram/palette'
@@ -20,6 +21,7 @@ onMounted(() => app.boot())
 <template>
   <AppRoot :platform="uiPlatform" :appearance="isDark ? 'dark' : 'light'">
     <template v-if="app.loaded">
+      <PendingBanner />
       <RouterView v-slot="{ Component, route: r }">
         <Transition name="page" mode="out-in">
           <component :is="Component" :key="r.path" />

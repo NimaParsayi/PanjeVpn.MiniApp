@@ -93,7 +93,7 @@ async function checkTon() {
 // Card payments are confirmed by the gateway a while after the user pays, so keep asking every few seconds.
 function startPolling() {
   clearInterval(poll)
-  poll = setInterval(() => void checkCard(true), 6000)
+  poll = setInterval(() => void checkCard(true), 10000)
 }
 
 async function checkCard(silent = false) {

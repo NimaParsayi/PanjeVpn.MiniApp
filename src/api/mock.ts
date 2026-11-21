@@ -19,6 +19,7 @@ const me: Me = {
   brandName: 'پنجه',
   brandEmojiId: '5280639613004685879',
   cardPayments: true,
+  pendingDeposit: new URLSearchParams(location.search).has('pending') ? { transactionId: 'cdemo', priceToman: 500_000, createdAt: new Date().toISOString() } : null,
 }
 
 const plans: Plan[] = [
@@ -68,6 +69,7 @@ const services: UserService[] = [
 
 const claimedTrials = new Set<string>()
 const deposits = new Map<string, { amount: number; checks: number; done: boolean; stars?: boolean; card?: boolean }>()
+deposits.set('cdemo', { amount: 500_000, checks: 0, done: false, card: true }) // the demo "pending" payment (?pending)
 
 const find = (id: string) => {
   const s = services.find((x) => x.id === id)
