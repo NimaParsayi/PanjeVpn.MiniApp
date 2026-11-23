@@ -54,6 +54,12 @@ if (!app.me?.isAdmin) router.replace('/')
           <template #subtitle>افزودن و حذف ادمین</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>
+        <Cell @click="router.push('/admin/resellers')">
+          <template #before><ToneIcon icon="people" tone="success" :emoji="E.services" /></template>
+          مدیریت نمایندگان
+          <template #subtitle>تعریف نماینده، پیشوند کانفیگ و حذف دسترسی</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
         <Cell @click="router.push('/admin/backups')">
           <template #before><ToneIcon icon="shield" tone="success" :emoji="E.receipt" /></template>
           بک‌اپ

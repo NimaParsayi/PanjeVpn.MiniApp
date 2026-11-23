@@ -1,4 +1,4 @@
-import type { AdminInfo, AdminPlan, AdminSetting, BackupFile, Api, Gift, Me, Plan, UserService } from './types'
+import type { AdminInfo, AdminPlan, AdminSetting, BackupFile, Api, Gift, Me, Plan, ResellerInfo, UserService } from './types'
 import { ApiError } from './types'
 import { totalPrice } from '@/utils/pricing'
 import { tgUser } from '@/telegram/webapp'
@@ -89,6 +89,10 @@ const charge = (amount: number) => {
 const admins: AdminInfo[] = [
   { telegramId: 123456789, username: 'owner', isOwner: true, isMe: true },
   { telegramId: 555000074, username: 'user_2', isOwner: false, isMe: false },
+]
+
+const resellers: ResellerInfo[] = [
+  { telegramId: 555000037, username: 'user_1', title: 'Nima', wallet: 1_250_000, services: 14 },
 ]
 
 const backups: BackupFile[] = [
@@ -266,6 +270,22 @@ export const mockApi: Api = {
     const i = admins.findIndex((a) => a.telegramId === telegramId)
     if (i >= 0 && !admins[i].isOwner && !admins[i].isMe) admins.splice(i, 1)
     return wait(admins.map((a) => ({ ...a })), 400)
+  },
+  getResellers: () => wait(resellers.map((r) => ({ ...r }))),
+  async saveReseller(telegramId, rawTitle) {
+    const title = rawTitle.trim()
+    if (!/^[A-Za-z0-9_]{2,20}$/.test(title)) throw new ApiError('پیشوند نماینده باید ۲ تا ۲۰ کاراکتر و فقط شامل حروف انگلیسی، عدد و _ باشد.')
+    if (resellers.some((r) => r.telegramId !== telegramId && r.title.toLowerCase() === title.toLowerCase()))
+      throw new ApiError('این پیشوند قبلاً برای نماینده دیگه‌ای ثبت شده.')
+    const existing = resellers.find((r) => r.telegramId === telegramId)
+    if (existing) existing.title = title
+    else resellers.push({ telegramId, username: telegramId % 2 ? `user_${telegramId % 100}` : null, title, wallet: 150_000, services: 0 })
+    return wait(resellers.map((r) => ({ ...r })), 400)
+  },
+  async removeReseller(telegramId) {
+    const i = resellers.findIndex((r) => r.telegramId === telegramId)
+    if (i >= 0) resellers.splice(i, 1)
+    return wait(resellers.map((r) => ({ ...r })), 400)
   },
   getBackups: () => wait({ items: [...backups], intervalHours: 24, keep: 14, sendToTelegram: true }),
   async createBackup() {

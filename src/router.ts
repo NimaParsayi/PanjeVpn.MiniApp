@@ -26,6 +26,7 @@ export const router = createRouter({
     { path: '/admin/plans', component: () => import('@/views/AdminPlansView.vue'), meta: { parent: '/admin' } },
     { path: '/admin/plans/:id', component: () => import('@/views/AdminPlanEditView.vue'), meta: { parent: '/admin/plans' } },
     { path: '/admin/admins', component: () => import('@/views/AdminAdminsView.vue'), meta: { parent: '/admin' } },
+    { path: '/admin/resellers', component: () => import('@/views/AdminResellersView.vue'), meta: { parent: '/admin' } },
     { path: '/admin/backups', component: () => import('@/views/AdminBackupView.vue'), meta: { parent: '/admin' } },
     { path: '/admin/settings', component: () => import('@/views/AdminSettingsView.vue'), meta: { parent: '/admin' } },
     { path: '/admin/broadcast', component: () => import('@/views/BroadcastView.vue'), meta: { parent: '/admin' } },
