@@ -23,7 +23,8 @@ const route = useRoute()
 const router = useRouter()
 const app = useApp()
 const ui = useUi()
-const method = computed(() => route.params.method as 'ton' | 'stars' | 'card')
+const method = computed(() => route.params.method as 'ton' | 'stars' | 'card' | 'tetrapay')
+const isRialGateway = computed(() => method.value === 'card' || method.value === 'tetrapay')
 
 type Step = 'amount' | 'pay' | 'done'
 const step = ref<Step>('amount')
@@ -60,6 +61,9 @@ async function start() {
       timer = setInterval(() => (now.value = Date.now()), 1000)
     } else if (method.value === 'card') {
       card.value = await api.startCardDeposit(finalAmount.value)
+      startPolling()
+    } else if (method.value === 'tetrapay') {
+      card.value = await api.startTetraPayDeposit(finalAmount.value)
       startPolling()
     } else {
       stars.value = await api.startStarsDeposit(finalAmount.value)
@@ -138,7 +142,7 @@ async function payStars() {
 
 <template>
   <div class="screen">
-    <PageTitle :title="method === 'ton' ? 'شارژ با TON' : method === 'card' ? 'شارژ کارت به کارت' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back />
+    <PageTitle :title="method === 'ton' ? 'شارژ با TON' : method === 'card' ? 'شارژ کارت به کارت' : method === 'tetrapay' ? 'شارژ با تتراپی' : 'شارژ با Stars'" subtitle="افزایش موجودی کیف پول" back />
 
     <template v-if="step === 'amount'">
       <List>
@@ -188,7 +192,7 @@ async function payStars() {
       </div>
     </List>
 
-    <List v-else-if="step === 'pay' && method === 'card' && card">
+    <List v-else-if="step === 'pay' && isRialGateway && card">
       <Section>
         <Cell>
           <template #before><ToneIcon icon="coin" tone="primary" :emoji="E.coin" /></template>
@@ -196,13 +200,19 @@ async function payStars() {
           <template #subtitle><span class="num">{{ toman(card.priceToman) }}</span></template>
         </Cell>
       </Section>
-      <Banner type="section">
+      <Banner v-if="method === 'card'" type="section">
         <template #before><TgEmoji :id="E.warning" fallback="warning" :size="32" /></template>
         <template #header>دقیقاً این مبلغ رو واریز کن</template>
         <template #subheader><b class="num">{{ toman(card.payToman) }}</b> — از صفحه‌ی پرداخت، شماره کارت مقصد رو می‌بینی. بعد از تأیید، کیف پولت خودکار شارژ می‌شه. این پرداخت تا ۳۰ دقیقه معتبره و بعدش خودکار لغو می‌شه.</template>
       </Banner>
+      <Banner v-else type="section">
+        <template #before><TgEmoji :id="E.coin" fallback="coin" :size="32" /></template>
+        <template #header>پرداخت از طریق درگاه تتراپی</template>
+        <template #subheader>مبلغ قابل پرداخت: <b class="num">{{ toman(card.payToman) }}</b> — در صفحه‌ی پرداخت می‌تونی روش آنلاین یا کارت‌به‌کارت رو انتخاب کنی. بعد از تأیید، کیف پولت خودکار شارژ می‌شه.</template>
+      </Banner>
       <div class="pad pay-btns">
         <Button stretched size="l" @click="openLink(card.payUrl)"><template #before><FIcon name="link" :size="20" /></template>رفتن به صفحه پرداخت</Button>
+        <Button v-if="method === 'tetrapay' && card.telegramUrl" stretched size="l" mode="gray" @click="openLink(card.telegramUrl)"><template #before><FIcon name="link" :size="20" /></template>پرداخت در تلگرام (تتراپی)</Button>
         <Button stretched size="l" mode="bezeled" :loading="checking" @click="checkCard()"><template #before><FIcon name="checkCircle" :size="20" /></template>پرداخت کردم</Button>
       </div>
       <Section v-if="cardNote"><Cell multiline>{{ cardNote }}</Cell></Section>

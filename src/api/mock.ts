@@ -19,6 +19,7 @@ const me: Me = {
   brandName: 'پنجه',
   brandEmojiId: '5280639613004685879',
   cardPayments: true,
+  tetraPayPayments: true,
   pendingDeposit: new URLSearchParams(location.search).has('pending') ? { transactionId: 'cdemo', priceToman: 500_000, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30 * 6e4).toISOString() } : null,
 }
 
@@ -189,6 +190,12 @@ export const mockApi: Api = {
     const id = `c${rid()}`
     deposits.set(id, { amount: priceToman, checks: 0, done: false, card: true })
     return wait({ transactionId: id, priceToman, payToman: priceToman + 37, payUrl: 'https://pay.tonpays.online/i/demo', telegramUrl: 'https://t.me/TonPaysInvoiceBot?start=inv_demo' })
+  },
+
+  async startTetraPayDeposit(priceToman) {
+    const id = `tp${rid()}`
+    deposits.set(id, { amount: priceToman, checks: 0, done: false, card: true })
+    return wait({ transactionId: id, priceToman, payToman: priceToman, payUrl: 'https://tetrapay.online/pay/demo', telegramUrl: 'https://t.me/Tetra98_Bot?start=pay_demo' })
   },
 
   async startStarsDeposit(priceToman) {

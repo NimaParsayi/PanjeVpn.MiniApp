@@ -38,6 +38,7 @@ export function createHttpApi(base: string): Api {
     startTonDeposit: (priceToman) => call('POST', '/deposits/ton', { priceToman }),
     checkDeposit: (id) => call('POST', `/deposits/${id}/check`),
     startCardDeposit: (priceToman) => call('POST', '/deposits/card', { priceToman }),
+    startTetraPayDeposit: (priceToman) => call('POST', '/deposits/tetrapay', { priceToman }),
     startStarsDeposit: (priceToman) => call('POST', '/deposits/stars', { priceToman }),
     createGift: (amount) => call('POST', '/gifts', { amount }),
     sendBulkMessage: (text) => call('POST', '/admin/bulk-message', { text }),

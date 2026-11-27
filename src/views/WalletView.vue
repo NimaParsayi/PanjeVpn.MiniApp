@@ -44,8 +44,14 @@ const balance = useCountUp(computed(() => app.me!.wallet))
         <template #header>افزایش موجودی</template>
         <Cell v-if="app.me?.cardPayments" @click="router.push('/wallet/deposit/card')">
           <template #before><ToneIcon icon="coin" tone="primary" :emoji="E.coin" /></template>
-          کارت به کارت
+          {{ app.me?.tetraPayPayments ? 'کارت به کارت (تون‌پیز)' : 'کارت به کارت' }}
           <template #subtitle>پرداخت ریالی با تایید خودکار</template>
+          <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
+        </Cell>
+        <Cell v-if="app.me?.tetraPayPayments" @click="router.push('/wallet/deposit/tetrapay')">
+          <template #before><ToneIcon icon="coin" tone="success" :emoji="E.coin" /></template>
+          {{ app.me?.cardPayments ? 'پرداخت ریالی (تتراپی)' : 'پرداخت ریالی (آنلاین / کارت‌به‌کارت)' }}
+          <template #subtitle>درگاه آنلاین و کارت‌به‌کارت با تایید خودکار</template>
           <template #after><FIcon name="chevronEnd" :size="18" class="chev" /></template>
         </Cell>
         <Cell @click="router.push('/wallet/deposit/ton')">
